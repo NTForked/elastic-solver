@@ -1,0 +1,10 @@
+build/
+lib/
+*.user
+*~
+*.autosave
+
+doc/*
+!doc/*.tex
+!doc/*.bib
+

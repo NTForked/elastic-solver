@@ -1,0 +1,33 @@
+load(vect)$
+load(eigen)$
+load(hj_fortran2)$
+
+optimprefix : tt$
+
+f : openw("stvk_tet.f90")$
+
+block(
+  [X, D, volume, lam, miu],
+  X : genmatrix(X, 3, 4),
+  D : genmatrix(D, 3, 3),
+  volume : genmatrix(volume, 1, 1),
+  lam : genmatrix(lam, 1, 1),
+  miu : genmatrix(miu, 1, 1),
+  
+  stvk_tet(X, D, volume, lam, miu) := block(
+  [DS, F, E],
+  DS : addcol(col(X, 2) - col(X, 1), 
+	      col(X, 3) - col(X, 1),
+	      col(X, 4) - col(X, 1)),
+  F : DS . D,
+  E : 0.5 * (transpose(F) . F - ident(3)),
+  volume * ( miu * mat_norm(E, frobenius)^2 + 0.5 * lam * mat_trace(E)^2 )
+  ),
+  
+  with_stdout(f, val_jac_hes_to_f90(stvk_tet, [X, D, volume, lam, miu])),
+  return()
+)$
+
+close(f)$
+  
+  
