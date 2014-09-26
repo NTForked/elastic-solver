@@ -1,0 +1,12 @@
+"stvk" :
+{
+	"model" : "/home/jerry/usr/workspace/stvk-model/dat/cylinder.vtk",
+	"time_step" : 0.005,
+	"alpha" : 0.0,
+	"beta" : 0.0,
+	"lame_lambda" : 1,
+	"lame_miu" : 0.45,
+	"density" : 1000,
+	"pos_penalty" : 100.0,
+	"output_path" : "/home/jerry/usr/workspace/stvk-model/result/"
+}

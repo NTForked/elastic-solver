@@ -1,7 +1,6 @@
 project(stvk-model)
 cmake_minimum_required(VERSION 2.8)
 
-
 set(CMAKE_CXX_FLAGS "-fopenmp -fpermissive -std=c++0x ${CMAKE_CXX_FLAGS}")
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/;${CMAKE_MODULE_PATH}")
 set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib/)
@@ -22,6 +21,12 @@ endif(EIGEN3_FOUND)
 #BLAS and LAPACK
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
+
+# UMFPACK
+find_package(UMFPACK REQUIRED)
+if(UMFPACK_FOUND)
+    include_directories(${UMFPACK_INCLUDES})
+endif(UMFPACK_FOUND)
 
 add_subdirectory(src)
 add_subdirectory(example)

@@ -4,3 +4,9 @@ target_link_libraries(test_stvk_tet
 stvk
 ${LAPACK_LIBRARIES}
 )
+
+add_executable(test_simulator test_simulator.cc)
+target_link_libraries(test_simulator
+stvk
+jtf-mesh
+)
