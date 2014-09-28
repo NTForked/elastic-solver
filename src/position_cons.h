@@ -4,14 +4,16 @@
 #include <zjucad/matrix/matrix.h>
 #include "math_function.h"
 
-class  PositionCons : public Constraint {
+class PositionCons : public Constraint {
 public :
-    PositionCons(const std::vector<size_t> &idx, const double w = 1);
-    virtual ~PositionCons();
-    virtual size_t Nx() const;
-    virtual size_t Nf() const;
-    virtual int Val(const double *x, double *val) const;
-    virtual int Jac(const double *x, Eigen::SparseMatrix<double> *hes) const;
+    PositionCons(const std::vector<size_t> &idx,
+                 const zjucad::matrix::matrix<double> &uc,
+                 const double w = 1);
+    ~PositionCons() { }
+    size_t Nx() const;
+    size_t Nf() const;
+    int Val(const double *x, double *val) const;
+    int Jac(const double *x, Eigen::SparseMatrix<double> *jac) const;
 private :
     const std::vector<size_t> idx_;
     zjucad::matrix::matrix<double> uc_;

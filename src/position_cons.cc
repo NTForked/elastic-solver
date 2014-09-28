@@ -5,10 +5,10 @@
 using namespace std;
 using namespace zjucad::matrix;
 
-PositionCons::PositionCons(const std::vector<size_t> &idx, const double w)
-    : idx_(idx), w_(w)  {
-    uc_ = zeros<double>(xx, 1);
-}
+PositionCons::PositionCons(const vector<size_t> &idx,
+                           const matrix<double> &uc,
+                           const double w)
+    : idx_(idx), uc_(uc), w_(w) { }
 
 size_t PositionCons::Nx() const {
     return uc_.size();
@@ -27,17 +27,17 @@ int PositionCons::Val(const double *x, double *val) const {
     return 0;
 }
 
-int PositionCons::Jac(const double *x, Eigen::SparseMatrix<double> *hes) const {
+int PositionCons::Jac(const double *x, Eigen::SparseMatrix<double> *jac) const {
     vector<Eigen::Triplet<double>> trips;
     for (size_t i = 0; i < idx_.size(); ++i) {
         trips.push_back(Eigen::Triplet<double>(3 * i + 0, 3 * idx_[i] + 0, w_));
         trips.push_back(Eigen::Triplet<double>(3 * i + 1, 3 * idx_[i] + 1, w_));
         trips.push_back(Eigen::Triplet<double>(3 * i + 2, 3 * idx_[i] + 2, w_));
     }
-    hes->resize(3 * idx_.size(), uc_.size());
-    hes->reserve(trips.size());
-    hes->setFromTriplets(trips.begin(), trips.end());
-    hes->makeCompressed();
+    jac->resize(3 * idx_.size(), uc_.size());
+    jac->reserve(trips.size());
+    jac->setFromTriplets(trips.begin(), trips.end());
+    jac->makeCompressed();
     return 0;
 }
 

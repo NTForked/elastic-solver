@@ -19,7 +19,7 @@ StVKEnergy::StVKEnergy(const zjucad::matrix::matrix<size_t> &tets,
     volume_.resize(tets_.size(2));
 #pragma omp parallel for
     for (size_t i = 0; i < tets_.size(2); ++i) {
-        matrix<double> tet_nods  = nods_(colon(), tets_(colon(), i));
+        matrix<double> tet_nods = nods_(colon(), tets_(colon(), i));
         Dm_[i] = tet_nods(colon(), colon(1, 3)) - tet_nods(colon(), 0) * ones<double>(1, 3);
         volume_[i] = fabs(det(Dm_[i])) / 6.0;
         if ( inv(Dm_[i]) ) {
@@ -52,8 +52,9 @@ int StVKEnergy::Gra(const double *x, double *gra) const {
     for (size_t i = 0; i < tets_.size(2); ++i) {
         matrix<double> tet_nods = nods(colon(), tets_(colon(), i));
         matrix<double> g_(12);
-        stvk_tet_jac_(&gra[0], &tet_nods[0], &Dm_[i][0], &volume_[i], &lambda_, &miu_);
-        g += g_;
+        stvk_tet_jac_(&g_[0], &tet_nods[0], &Dm_[i][0], &volume_[i], &lambda_, &miu_);
+        for (size_t k = 0; k < 12; ++k)
+            g[tets_(k / 3, i) * 3 + k % 3] += g_[k];
     }
     g *= w_;
     return 0;
@@ -71,7 +72,7 @@ int StVKEnergy::Hes(const double *x, Eigen::SparseMatrix<double> *hes) const  {
             for (size_t q = 0; q < 12; ++q) {
                 size_t I = tets_(p / 3, i) * 3 + p % 3;
                 size_t J = tets_(q / 3, i) * 3 + q % 3;
-                trips.push_back(Eigen::Triplet<double>(I, J, w_ * H[p][q]));
+                trips.push_back(Eigen::Triplet<double>(I, J, w_ * H(p, q)));
             }
         }
     }

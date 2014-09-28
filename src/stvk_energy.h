@@ -4,18 +4,20 @@
 #include <zjucad/matrix/matrix.h>
 #include "math_function.h"
 
+// V * (\miu * E : E + 0.5 * \lambda * tr^2(E))
+
 class StVKEnergy : public Energy {
 public :
-    StVKEnergy(const zjucad::matrix::matrix<size_t>  &tets,
-                            const zjucad::matrix::matrix<double> &nods,
-                            const double lambda,
-                            const double miu,
-                            const double w = 1);
-    virtual ~StVKEnergy();
-    virtual size_t Nx() const;
-    virtual int Val(const double *x, double *val) const;
-    virtual int Gra(const double *x, double *gra) const;
-    virtual int Hes(const double *x, Eigen::SparseMatrix<double> *hes) const;
+    StVKEnergy(const zjucad::matrix::matrix<size_t> &tets,
+               const zjucad::matrix::matrix<double> &nods,
+               const double lambda,
+               const double miu,
+               const double w = 1);
+    ~StVKEnergy() { }
+    size_t Nx() const;
+    int Val(const double *x, double *val) const;
+    int Gra(const double *x, double *gra) const;
+    int Hes(const double *x, Eigen::SparseMatrix<double> *hes) const;
 
 private :
     const zjucad::matrix::matrix<size_t> &tets_;
