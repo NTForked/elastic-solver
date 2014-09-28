@@ -129,10 +129,11 @@ int StVKSimulator::AssembleRHS(VectorXd &rhs) {
     VectorXd g(dim1), v(dim2);
     g.setZero(); v.setZero();
     pe_->Gra(&disp_[0], g.data());
+    g = -g;
     rhs.head(dim1) = M_ * x_.head(dim1)
-            + h_ * Map<VectorXd>(&fext_[0], fext_.size()) - h_ * g;
+            + h_ * ( Map<VectorXd>(&fext_[0], fext_.size()) - g);
     pc_->Val(&disp_[0], v.data());
-    rhs.tail(dim2) = -v / h_;
+    rhs.tail(dim2) = -v;
     return 0;
 }
 

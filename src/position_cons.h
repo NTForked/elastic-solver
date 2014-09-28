@@ -16,7 +16,7 @@ public :
     int Jac(const double *x, Eigen::SparseMatrix<double> *jac) const;
 private :
     const std::vector<size_t> idx_;
-    zjucad::matrix::matrix<double> uc_;
+    const zjucad::matrix::matrix<double> uc_;
     const double w_;
 };
 

@@ -27,8 +27,15 @@ int main(int argc, char *argv[])
         return __LINE__;
     }
 
-    matrix<double> rand_disp = rand(3, 1);
-    nods += rand_disp * ones<double>(1, 3);
+    // apply a rotation
+    matrix<double> R(3, 3);
+    R = zeros<double>(3, 3);
+    double angle = 3.14159265358979323 / 4;
+    R(0, 0) = 1; R(1, 1) = R(2, 2) = cos(angle);
+    R(1, 2) = -sin(angle); R(2, 1) = sin(angle);
+    nods = temp(R * nods);
+
+    cout << nods << endl;
     double val = 0;
     double lambda = 0.1, miu = 0.2;
     stvk_tet_(&val, &nods[0], &D[0], &volume, &lambda, &miu);
