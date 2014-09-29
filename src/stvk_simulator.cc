@@ -4,6 +4,7 @@
 #include <Eigen/UmfPackSupport>
 #include <Eigen/Dense>
 #include <zjucad/matrix/itr_matrix.h>
+#include <zjucad/matrix/io.h>
 #include "stvk_energy.h"
 #include "position_cons.h"
 
@@ -32,8 +33,12 @@ StVKSimulator::StVKSimulator(const zjucad::matrix::matrix<size_t> &tets,
     M_.setFromTriplets(mass_trip.begin(), mass_trip.end());
     M_.makeCompressed();
 
-    double lambda = pt_.get<double>("stvk.lame_lambda");
-    double miu    = pt_.get<double>("stvk.lame_miu");
+    // comupte lame first & second parameters
+    double E = pt_.get<double>("stvk.Young_modulus");
+    double v = pt_.get<double>("stvk.Poisson_ratio");
+    double lambda = E * v / ((1.0 + v) * (1.0 - 2.0 * v));
+    double miu = E / 2.0 * (1.0 + v);
+
     x_.resize(nods_.size());
     x_.setZero();
     pe_.reset(new StVKEnergy(tets_, nods_, lambda, miu));
@@ -43,7 +48,7 @@ void StVKSimulator::SetFixedPoints(const vector<size_t> &idx,
                                    const matrix<double> &uc) {
     cerr << "[INFO] the number of fixed points is: " << idx.size() << endl;
     double position_penalty = pt_.get<double>("stvk.pos_penalty");
-    pc_.reset(new PositionCons(idx, uc, position_penalty));
+    pc_.reset(new PositionCons(idx, uc));
     x_.resize(pe_->Nx() + pc_->Nf());
     x_.setZero();
 }
@@ -91,10 +96,31 @@ int StVKSimulator::AssembleLHS(Eigen::SparseMatrix<double> &A) {
 
     pe_->Hes(&disp_[0], &K);
     pc_->Jac(&disp_[0], &C);
-    L = (1 + h_ * alpha_) * M_  + (h_ * h_ + h_ * beta_) * K;
+
+    L = (1 + h_ * alpha_) * M_  + h_ * (h_ + beta_) * K;
     C *= h_;
     L.makeCompressed();
     C.makeCompressed();
+
+//    MatrixXd K_(K.rows(), K.cols());
+//    for (size_t col = 0; col < L.cols(); ++col) {
+//        for (size_t cnt = K.outerIndexPtr()[col]; cnt < K.outerIndexPtr()[col + 1]; ++cnt)
+//            K_(K.innerIndexPtr()[cnt], col) = K.valuePtr()[cnt];
+//    }
+//    Eigen::SelfAdjointEigenSolver<MatrixXd> solver(K_);
+//    for (size_t i = 0; i < 10; ++i)
+//        cout << solver.eigenvalues()[i] << endl;
+//    exit(0);
+
+//    MatrixXd L_(L.rows(), L.cols());
+//    for (size_t col = 0; col < L.cols(); ++col) {
+//        for (size_t cnt = L.outerIndexPtr()[col]; cnt < L.outerIndexPtr()[col + 1]; ++cnt)
+//            L_(L.innerIndexPtr()[cnt], col) = L.valuePtr()[cnt];
+//    }
+//    Eigen::SelfAdjointEigenSolver<MatrixXd> solver(L_);
+//    for (size_t i = 0; i < 10; ++i)
+//        cout << solver.eigenvalues()[i] << endl;
+//    exit(0);
 
     size_t dim1 = pe_->Nx();
     size_t dim2 = pc_->Nf();
@@ -108,8 +134,8 @@ int StVKSimulator::AssembleLHS(Eigen::SparseMatrix<double> &A) {
     }
     for (size_t j = 0; j < dim1; ++j) {
         for (size_t cnt = C.outerIndexPtr()[j]; cnt < C.outerIndexPtr()[j + 1]; ++cnt) {
-            trips.push_back(Triplet<double>(nods_.size() + C.innerIndexPtr()[cnt], j, C.valuePtr()[cnt]));
-            trips.push_back(Triplet<double>(j, C.innerIndexPtr()[cnt] + nods_.size(), C.valuePtr()[cnt]));
+            trips.push_back(Triplet<double>(dim1 + C.innerIndexPtr()[cnt], j, C.valuePtr()[cnt]));
+            trips.push_back(Triplet<double>(j, C.innerIndexPtr()[cnt] + dim1, C.valuePtr()[cnt]));
         }
     }
     A.resize(dim1 + dim2, dim1 + dim2);
