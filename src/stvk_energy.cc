@@ -3,6 +3,7 @@
 #include <iostream>
 #include <hjlib/math/blas_lapack.h>
 #include <zjucad/matrix/itr_matrix.h>
+#include <zjucad/matrix/io.h>
 #include <zjucad/matrix/lapack.h>
 #include "stvk_tet.h"
 
