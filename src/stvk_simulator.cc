@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <Eigen/UmfPackSupport>
+#include <Eigen/Dense>
 #include <zjucad/matrix/itr_matrix.h>
 #include "stvk_energy.h"
 #include "position_cons.h"
@@ -115,6 +116,17 @@ int StVKSimulator::AssembleLHS(Eigen::SparseMatrix<double> &A) {
     A.reserve(trips.size());
     A.setFromTriplets(trips.begin(), trips.end());
     A.makeCompressed();
+
+//    MatrixXd A_(A.rows(), A.cols());
+//    A.setZero();
+//    for (size_t j = 0; j < A.cols(); ++j) {
+//        for (size_t cnt = A.outerIndexPtr()[j]; cnt < A.outerIndexPtr()[j + 1]; ++cnt)
+//            A_(A.innerIndexPtr()[cnt], j) = A.valuePtr()[cnt];
+//    }
+//    Eigen::SelfAdjointEigenSolver<MatrixXd> solver(A_);
+//    cout << solver.eigenvalues()[0] << endl;
+//    exit(0);
+
     return 0;
 }
 
