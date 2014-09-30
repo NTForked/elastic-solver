@@ -4,6 +4,8 @@
 #include <zjucad/matrix/matrix.h>
 #include "math_function.h"
 
+namespace cj { namespace elastic {
+
 // V * (\miu * E : E + 0.5 * \lambda * tr^2(E))
 
 class StVKEnergy : public Energy {
@@ -29,4 +31,5 @@ private :
     zjucad::matrix::matrix<double> volume_;
 };
 
+}}
 #endif

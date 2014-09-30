@@ -6,6 +6,8 @@
 #include <Eigen/Eigen>
 #include <Eigen/Sparse>
 
+namespace cj { namespace elastic {
+
 class StVKEnergy;
 class PositionCons;
 
@@ -44,4 +46,5 @@ private :
     Eigen::SparseMatrix<double> M_;
 };
 
+}}
 #endif

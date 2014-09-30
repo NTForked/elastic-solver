@@ -4,6 +4,8 @@
 #include <zjucad/matrix/matrix.h>
 #include "math_function.h"
 
+namespace cj { namespace elastic {
+
 class PositionCons : public Constraint {
 public :
     PositionCons(const std::vector<size_t> &idx,
@@ -20,4 +22,5 @@ private :
     const double w_;
 };
 
+}}
 #endif

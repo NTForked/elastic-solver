@@ -3,6 +3,9 @@
 
 #include <Eigen/Sparse>
 
+
+namespace cj { namespace elastic {
+
 // interface of energy functional
 class Energy {
 public :
@@ -23,4 +26,5 @@ public :
     virtual int Jac(const double *x, Eigen::SparseMatrix<double> *jac) const = 0;
 };
 
+}}
 #endif

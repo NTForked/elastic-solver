@@ -12,6 +12,8 @@ using namespace std;
 using namespace zjucad::matrix;
 using namespace Eigen;
 
+namespace cj { namespace elastic {
+
 StVKSimulator::StVKSimulator(const zjucad::matrix::matrix<size_t> &tets,
                              const zjucad::matrix::matrix<double> &nods,
                              boost::property_tree::ptree &pt)
@@ -175,3 +177,4 @@ int StVKSimulator::AssembleRHS(VectorXd &rhs) {
     return 0;
 }
 
+}}

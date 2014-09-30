@@ -5,6 +5,8 @@
 using namespace std;
 using namespace zjucad::matrix;
 
+namespace cj { namespace elastic {
+
 PositionCons::PositionCons(const vector<size_t> &idx,
                            const matrix<double> &uc,
                            const double w)
@@ -41,3 +43,4 @@ int PositionCons::Jac(const double *x, Eigen::SparseMatrix<double> *jac) const {
     return 0;
 }
 
+}}

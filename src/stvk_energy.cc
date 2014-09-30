@@ -10,6 +10,8 @@
 using namespace std;
 using namespace zjucad::matrix;
 
+namespace cj { namespace elastic {
+
 StVKEnergy::StVKEnergy(const zjucad::matrix::matrix<size_t> &tets,
                        const zjucad::matrix::matrix<double> &nods,
                        const double lambda,
@@ -83,3 +85,5 @@ int StVKEnergy::Hes(const double *x, Eigen::SparseMatrix<double> *hes) const  {
     hes->makeCompressed();
     return 0;
 }
+
+}}

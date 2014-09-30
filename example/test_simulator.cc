@@ -7,6 +7,7 @@
 
 using namespace std;
 using namespace zjucad::matrix;
+using namespace cj::elastic;
 
 int main(int argc, char *argv[])
 {
