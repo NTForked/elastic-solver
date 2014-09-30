@@ -8,8 +8,8 @@
 
 namespace cj { namespace elastic {
 
-class StVKEnergy;
-class PositionCons;
+class Energy;
+class Constraint;
 
 // displacement based stvk model
 
@@ -34,8 +34,8 @@ private :
     const zjucad::matrix::matrix<double> &nods_;
 
     // energy and constraint
-    std::shared_ptr<StVKEnergy>   pe_;
-    std::shared_ptr<PositionCons> pc_;
+    std::shared_ptr<Energy>     pe_;
+    std::shared_ptr<Constraint> pc_;
 
     // physics model
     boost::property_tree::ptree pt_;

@@ -3,9 +3,9 @@
 
 template <typename OS, typename FLOAT, typename INT>
 void line2vtk(
-    OS &os,
-    const FLOAT *node, size_t node_num,
-    const INT *line, size_t line_num)
+        OS &os,
+        const FLOAT *node, size_t node_num,
+        const INT *line, size_t line_num)
 {
     os << "# vtk DataFile Version 2.0\nTRI\nASCII\n\nDATASET UNSTRUCTURED_GRID\n";
 
@@ -44,9 +44,9 @@ void point2vtk(OS &os,
 
 template <typename OS, typename FLOAT, typename INT>
 void tri2vtk(
-    OS &os,
-    const FLOAT *node, size_t node_num,
-    const INT *tri, size_t tri_num)
+        OS &os,
+        const FLOAT *node, size_t node_num,
+        const INT *tri, size_t tri_num)
 {
     os << "# vtk DataFile Version 2.0\nTRI\nASCII\n\nDATASET UNSTRUCTURED_GRID\n";
 
@@ -64,9 +64,9 @@ void tri2vtk(
 
 template <typename OS, typename FLOAT, typename INT>
 void quad2vtk(
-    OS &os,
-    const FLOAT *node, size_t node_num,
-    const INT *quad, size_t quad_num)
+        OS &os,
+        const FLOAT *node, size_t node_num,
+        const INT *quad, size_t quad_num)
 {
     os << "# vtk DataFile Version 2.0\nTRI\nASCII\n\nDATASET UNSTRUCTURED_GRID\n";
 
@@ -83,9 +83,9 @@ void quad2vtk(
 }
 template <typename OS, typename FLOAT, typename INT>
 void tet2vtk(
-    OS &os,
-    const FLOAT *node, size_t node_num,
-    const INT *tet, size_t tet_num)
+        OS &os,
+        const FLOAT *node, size_t node_num,
+        const INT *tet, size_t tet_num)
 {
     os << "# vtk DataFile Version 2.0\nTET\nASCII\n\nDATASET UNSTRUCTURED_GRID\n";
     os << "POINTS " << node_num << " float\n";
@@ -103,9 +103,9 @@ void tet2vtk(
 }
 template <typename OS, typename FLOAT, typename INT>
 void hex2vtk(
-    OS &os,
-    const FLOAT *node, size_t node_num,
-    const INT *hex, size_t hex_num)
+        OS &os,
+        const FLOAT *node, size_t node_num,
+        const INT *hex, size_t hex_num)
 {
     os << "# vtk DataFile Version 2.0\nTET\nASCII\n\nDATASET UNSTRUCTURED_GRID\n";
     os << "POINTS " << node_num << " float\n";

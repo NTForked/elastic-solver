@@ -36,23 +36,22 @@ StVKSimulator::StVKSimulator(const zjucad::matrix::matrix<size_t> &tets,
     M_.makeCompressed();
 
     // comupte lame first & second parameters
+    // according to Young's modulus and Possion ratio
     double E = pt_.get<double>("stvk.Young_modulus");
     double v = pt_.get<double>("stvk.Poisson_ratio");
     double lambda = E * v / ((1.0 + v) * (1.0 - 2.0 * v));
     double miu = E / 2.0 * (1.0 + v);
 
-    x_.resize(nods_.size());
-    x_.setZero();
     pe_.reset(new StVKEnergy(tets_, nods_, lambda, miu));
+    x_.resize(pe_->Nx());
 }
 
 void StVKSimulator::SetFixedPoints(const vector<size_t> &idx,
                                    const matrix<double> &uc) {
     cerr << "[INFO] the number of fixed points is: " << idx.size() << endl;
-    double position_penalty = pt_.get<double>("stvk.pos_penalty");
+    double pos_penalty = pt_.get<double>("stvk.pos_penalty");
     pc_.reset(new PositionCons(idx, uc));
     x_.resize(pe_->Nx() + pc_->Nf());
-    x_.setZero();
 }
 
 void StVKSimulator::SetExternalForce(const size_t idx, const double *force) {
@@ -63,9 +62,9 @@ void StVKSimulator::ClearExternalForce() {
     fext_ = zeros<double>(3, nods_.size(2));
 }
 
-int StVKSimulator::Forward() { // Ax = b
+int StVKSimulator::Forward() {
     SparseMatrix<double> A;
-    VectorXd b;
+    VectorXd             b;
     AssembleLHS(A);
     AssembleRHS(b);
 
@@ -95,40 +94,19 @@ int StVKSimulator::AssembleLHS(Eigen::SparseMatrix<double> &A) {
         cerr << "[INFO] null pointer.\n";
         return __LINE__;
     }
-
     pe_->Hes(&disp_[0], &K);
     pc_->Jac(&disp_[0], &C);
 
     L = (1 + h_ * alpha_) * M_  + h_ * (h_ + beta_) * K;
-    C *= h_;
     L.makeCompressed();
+    C *= h_;
     C.makeCompressed();
-
-//    MatrixXd K_(K.rows(), K.cols());
-//    for (size_t col = 0; col < L.cols(); ++col) {
-//        for (size_t cnt = K.outerIndexPtr()[col]; cnt < K.outerIndexPtr()[col + 1]; ++cnt)
-//            K_(K.innerIndexPtr()[cnt], col) = K.valuePtr()[cnt];
-//    }
-//    Eigen::SelfAdjointEigenSolver<MatrixXd> solver(K_);
-//    for (size_t i = 0; i < 10; ++i)
-//        cout << solver.eigenvalues()[i] << endl;
-//    exit(0);
-
-//    MatrixXd L_(L.rows(), L.cols());
-//    for (size_t col = 0; col < L.cols(); ++col) {
-//        for (size_t cnt = L.outerIndexPtr()[col]; cnt < L.outerIndexPtr()[col + 1]; ++cnt)
-//            L_(L.innerIndexPtr()[cnt], col) = L.valuePtr()[cnt];
-//    }
-//    Eigen::SelfAdjointEigenSolver<MatrixXd> solver(L_);
-//    for (size_t i = 0; i < 10; ++i)
-//        cout << solver.eigenvalues()[i] << endl;
-//    exit(0);
 
     size_t dim1 = pe_->Nx();
     size_t dim2 = pc_->Nf();
 
-    // | L  hCT |
-    // | hC   0 |
+    // [ L  hCT ]|x  | = [Mv + h(fext - f)]
+    // [ hC   0 ]|lam|   [    C(uc - u)   ]
     for (size_t j = 0; j < dim1; ++j) {
         for (size_t cnt = L.outerIndexPtr()[j]; cnt < L.outerIndexPtr()[j + 1]; ++cnt) {
             trips.push_back(Triplet<double>(L.innerIndexPtr()[cnt], j, L.valuePtr()[cnt]));
@@ -144,17 +122,6 @@ int StVKSimulator::AssembleLHS(Eigen::SparseMatrix<double> &A) {
     A.reserve(trips.size());
     A.setFromTriplets(trips.begin(), trips.end());
     A.makeCompressed();
-
-//    MatrixXd A_(A.rows(), A.cols());
-//    A.setZero();
-//    for (size_t j = 0; j < A.cols(); ++j) {
-//        for (size_t cnt = A.outerIndexPtr()[j]; cnt < A.outerIndexPtr()[j + 1]; ++cnt)
-//            A_(A.innerIndexPtr()[cnt], j) = A.valuePtr()[cnt];
-//    }
-//    Eigen::SelfAdjointEigenSolver<MatrixXd> solver(A_);
-//    cout << solver.eigenvalues()[0] << endl;
-//    exit(0);
-
     return 0;
 }
 
@@ -165,14 +132,15 @@ int StVKSimulator::AssembleRHS(VectorXd &rhs) {
     }
     size_t dim1 = pe_->Nx();
     size_t dim2 = pc_->Nf();
-    rhs.resize(dim1 + dim2);
-    VectorXd g(dim1), v(dim2);
-    g.setZero(); v.setZero();
-    pe_->Gra(&disp_[0], g.data());
-    g = -g;
-    rhs.head(dim1) = M_ * x_.head(dim1)
-            + h_ * ( Map<VectorXd>(&fext_[0], fext_.size()) - g);
+
+    VectorXd f(dim1); f.setZero();
+    VectorXd v(dim2); v.setZero();
+    pe_->Gra(&disp_[0], f.data());
     pc_->Val(&disp_[0], v.data());
+
+    rhs.resize(dim1 + dim2);
+    rhs.head(dim1) = M_ * x_.head(dim1)
+            + h_ * (Map<VectorXd>(&fext_[0], fext_.size()) + f);
     rhs.tail(dim2) = -v;
     return 0;
 }

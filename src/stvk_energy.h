@@ -6,6 +6,7 @@
 
 namespace cj { namespace elastic {
 
+// \miu and \lambda are lame parameters
 // V * (\miu * E : E + 0.5 * \lambda * tr^2(E))
 
 class StVKEnergy : public Energy {

@@ -1,5 +1,6 @@
 #include "position_cons.h"
 
+#include <iostream>
 #include <zjucad/matrix/itr_matrix.h>
 
 using namespace std;
