@@ -97,7 +97,7 @@ int StVKSimulator::AssembleLHS(Eigen::SparseMatrix<double> &A) {
     pe_->Hes(&disp_[0], &K);
     pc_->Jac(&disp_[0], &C);
 
-    L = (1 + h_ * alpha_) * M_  + h_ * (h_ + beta_) * K;
+    L = (1 + h_ * alpha_) * M_ + h_ * (h_ + beta_) * K;
     L.makeCompressed();
     C *= h_;
     C.makeCompressed();

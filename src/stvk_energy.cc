@@ -18,13 +18,15 @@ StVKEnergy::StVKEnergy(const zjucad::matrix::matrix<size_t> &tets,
                        const double miu,
                        const double w)
     : tets_(tets), nods_(nods), lambda_(lambda), miu_(miu), w_(w) {
+    // precompute volume and [x1 - x0, x2 - x0, x3 - x0]^-1
     Dm_.resize(tets_.size(2));
     volume_.resize(tets_.size(2));
 #pragma omp parallel for
     for (size_t i = 0; i < tets_.size(2); ++i) {
         matrix<double> tet_nods = nods_(colon(), tets_(colon(), i));
         Dm_[i] = tet_nods(colon(), colon(1, 3)) - tet_nods(colon(), 0) * ones<double>(1, 3);
-        volume_[i] = fabs(det(Dm_[i])) / 6.0;
+        matrix<double> cache = Dm_[i];
+        volume_[i] = fabs(det(cache)) / 6.0;   // det method will change the parameter matrix!!!
         if ( inv(Dm_[i]) ) {
             cerr << "[INFO] degenerated tet.\n";
         }
@@ -37,7 +39,7 @@ size_t StVKEnergy::Nx() const {
 
 int StVKEnergy::Val(const double *x, double *val) const {
     itr_matrix<const double *> dx(3, nods_.size(2), x);
-    matrix<double> nods = nods_  + dx;
+    matrix<double> nods = nods_ + dx;
     for (size_t i = 0; i < tets_.size(2); ++i) {
         matrix<double> tet_nods = nods(colon(), tets_(colon(), i));
         double v = 0;
