@@ -1,0 +1,84 @@
+\documentclass[a4paper,9pt,twocolumn]{extarticle}
+
+\usepackage[hmargin=0.75in,vmargin=0.75in]{geometry}
+\setlength{\parskip}{1ex plus 0.5ex minus 0.5ex}
+\usepackage{relsize}
+\usepackage{exscale}
+\usepackage[english]{babel}
+\usepackage{parskip}
+\usepackage{color}
+\usepackage{algorithm,algorithmic}
+\usepackage{amsmath,amsthm,amssymb,amsfonts}
+
+\newcommand{\Diff}{\mathcal{D}}
+\newcommand{\TODO}[1]{\textcolor{red}{#1}}
+
+\makeatletter
+\thm@headfont{\sc}
+\newtheorem{theorem}{Theorem}
+
+\title{Implicit Integrator}
+\author{Jiong Chen}
+
+\begin{document}
+\maketitle
+
+Euler-Lagrange equation:
+\begin{equation}
+	M\ddot u + D(u)\dot u - f_{int}(u) = f_{ext} \label{euler}
+\end{equation}
+with position constraint:
+\begin{equation}
+ Cu = u_c \label{cons}
+\end{equation}
+Rewrite equation \eqref{euler} as two ODEs together with \eqref{cons} and use Lagrangian multipliers, we have
+\begin{equation*}
+  \left\{
+   \begin{aligned}
+			v &= \dot u \\
+			M\dot v + D(u)v - f_{int}(u) + C^T\lambda &= f_{ext} \\
+			Cu &= u_c 
+   \end{aligned}
+   \right.
+  \end{equation*}
+Discretize above equations:
+\begin{equation*}
+  \left\{
+   \begin{aligned}
+			u_{k+ 1} &= u_k + hv_{k+1} \\
+			M\frac{v_{k+1} - v_k}{h} + D(u_{k+1})v_{k+1}  + C^T\lambda &= f_{ext} + f_{int}(u_{k+1})\\
+			Cu_{k+1} &= u_c 
+   \end{aligned}
+   \right.
+  \end{equation*}
+\begin{equation*}
+M\frac{v_{k+1} - v_k}{h} + D(\TODO{u_k})v_{k+1}  + C^T\lambda = f_{ext} + f_{int}(u_k + hv_{k + 1})
+\end{equation*}
+\begin{equation*}
+M\frac{v_{k+1} - v_k}{h} + \left[\alpha M + \beta K(u_k)\right]v_{k+1}  + C^T\lambda = f_{ext} + f_{int}(u_k + hv_{k + 1})
+\end{equation*}
+\begin{equation*}
+M\frac{v_{k+1} - v_k}{h} + \left[\alpha M + \beta K(u_k)\right]v_{k+1}  + C^T\lambda \approx f_{ext} \TODO{- \frac{\partial E}{\partial x}\bigg|_{u_k} - K(u_k) hv_{k +1}}
+\end{equation*}
+\begin{eqnarray*}
+\big((1 + h\alpha )M + (h\beta + h^2)K(u_k) \big )v_{k + 1} + C^T \lambda &=& Mv_k + h(f_{ext} - \frac{\partial E}{\partial x}\bigg|_{u_k}) \\
+Cv_{k + 1} &=& \frac{1}{h} (u_c - Cu_k)
+\end{eqnarray*}
+\begin{equation*}
+\begin{bmatrix}
+	(1 + h\alpha )M + (h\beta + h^2)K(u_k)  & C^T \\
+	C & 0
+\end{bmatrix}
+\begin{bmatrix}
+	v_{k + 1} \\
+	\lambda
+\end{bmatrix}
+=
+\begin{bmatrix}
+	Mv_k + h(f_{ext} - \frac{\partial E}{\partial x}\bigg|_{u_k})  \\
+	\frac{1}{h} (u_c - Cu_k)
+\end{bmatrix}
+\end{equation*}
+
+ 
+\end{document}

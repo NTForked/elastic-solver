@@ -1,7 +1,6 @@
 #include "stvk_simulator.h"
 
 #include <iostream>
-#include <fstream>
 #include <Eigen/UmfPackSupport>
 #include <Eigen/Dense>
 #include <zjucad/matrix/itr_matrix.h>
@@ -40,6 +39,7 @@ StVKSimulator::StVKSimulator(const zjucad::matrix::matrix<size_t> &tets,
 
     pe_.reset(new StVKEnergy(tets_, nods_, lambda, miu));
     x_.resize(pe_->Nx());
+    x_.setZero();
 }
 
 void StVKSimulator::SetFixedPoints(const vector<size_t> &idx,
@@ -48,6 +48,7 @@ void StVKSimulator::SetFixedPoints(const vector<size_t> &idx,
     double pos_penalty = pt_.get<double>("stvk.pos_penalty");
     pc_.reset(new PositionCons(idx, uc));
     x_.resize(pe_->Nx() + pc_->Nf());
+    x_.setZero();
 }
 
 void StVKSimulator::SetExternalForce(const size_t idx, const double *force) {
@@ -61,6 +62,7 @@ void StVKSimulator::ClearExternalForce() {
 int StVKSimulator::Forward() {
     SparseMatrix<double> A;
     VectorXd             b;
+
     AssembleLHS(A);
     AssembleRHS(b);
 
@@ -74,7 +76,7 @@ int StVKSimulator::Forward() {
     if ( solver.info() != Success ) {
         cerr << "[INFO] solve failed.\n";
         return __LINE__;
-    }
+    }  
     Map<VectorXd>(&disp_[0], disp_.size()) += h_ * x_.head(nods_.size());
     return 0;
 }
@@ -101,8 +103,8 @@ int StVKSimulator::AssembleLHS(Eigen::SparseMatrix<double> &A) {
     size_t dim1 = pe_->Nx();
     size_t dim2 = pc_->Nf();
 
-    // [ L  hCT ]|x  | = [Mv + h(fext - f)]
-    // [ hC   0 ]|lam|   [    C(uc - u)   ]
+    // [ L  CT ]|x  | = [Mv + h(fext - f) ]
+    // [ C   0 ]|lam|   [  C(uc - u) / h  ]
     for (size_t j = 0; j < dim1; ++j) {
         for (size_t cnt = L.outerIndexPtr()[j]; cnt < L.outerIndexPtr()[j + 1]; ++cnt) {
             trips.push_back(Triplet<double>(L.innerIndexPtr()[cnt], j, L.valuePtr()[cnt]));
@@ -136,7 +138,7 @@ int StVKSimulator::AssembleRHS(VectorXd &rhs) {
 
     rhs.resize(dim1 + dim2);
     rhs.head(dim1) = M_ * x_.head(dim1)
-            + h_ * (Map<VectorXd>(&fext_[0], fext_.size()) + f);
+            + h_ * (Map<VectorXd>(&fext_[0], fext_.size()) - f);
     rhs.tail(dim2) = -v / h_;
     return 0;
 }

@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
     }
     // simulate
     matrix<double> curr_nods = nods;
-    for (size_t frm = 0; frm < 100; ++frm) {
+    for (size_t frm = 0; frm < 200; ++frm) {
         cerr << "[INFO] this is " << frm << " frame.\n";
         {
             stringstream ss;
