@@ -31,8 +31,8 @@ int main(int argc, char *argv[])
     }
     {
         // set external force
-        for (size_t id = 66; id < 89; ++id) {
-            double f[3] = {0, 0, -100};
+        for (size_t id = 66; id <= 89; ++id) {
+            double f[3] = {0, 0, -6000};
             sim->SetExternalForce(id, f);
         }
     }

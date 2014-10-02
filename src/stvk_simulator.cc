@@ -1,12 +1,14 @@
 #include "stvk_simulator.h"
 
 #include <iostream>
+#include <fstream>
 #include <Eigen/UmfPackSupport>
 #include <Eigen/Dense>
 #include <zjucad/matrix/itr_matrix.h>
 #include <zjucad/matrix/io.h>
 #include "stvk_energy.h"
 #include "position_cons.h"
+#include "mass_matrix.h"
 
 using namespace std;
 using namespace zjucad::matrix;
@@ -24,16 +26,10 @@ StVKSimulator::StVKSimulator(const zjucad::matrix::matrix<size_t> &tets,
     disp_ = zeros<double>(3, nods_.size(2));
     fext_ = zeros<double>(3, nods_.size(2));
 
-    // set mass matrix
+    // set mass matrix, here we want an unlumped matrix
     double dens = pt_.get<double>("stvk.density");
-    vector<Triplet<double>> mass_trip;
-    for (size_t i = 0; i < nods_.size(); ++i) {
-        mass_trip.push_back(Triplet<double>(i, i, dens));
-    }
-    M_.resize(nods_.size(), nods_.size());
-    M_.reserve(mass_trip.size());
-    M_.setFromTriplets(mass_trip.begin(), mass_trip.end());
-    M_.makeCompressed();
+    MassMatrix mass_calculator(tets_, nods_, dens);
+    mass_calculator.Compute(M_, false);
 
     // comupte lame first & second parameters
     // according to Young's modulus and Possion ratio
@@ -55,7 +51,7 @@ void StVKSimulator::SetFixedPoints(const vector<size_t> &idx,
 }
 
 void StVKSimulator::SetExternalForce(const size_t idx, const double *force) {
-    fext_(colon(), idx) += itr_matrix<const double *>(3, 1, force);
+    fext_(colon(), idx) = itr_matrix<const double *>(3, 1, force);
 }
 
 void StVKSimulator::ClearExternalForce() {
