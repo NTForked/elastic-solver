@@ -26,7 +26,7 @@ StVKEnergy::StVKEnergy(const zjucad::matrix::matrix<size_t> &tets,
         matrix<double> tet_nods = nods_(colon(), tets_(colon(), i));
         Dm_[i] = tet_nods(colon(), colon(1, 3)) - tet_nods(colon(), 0) * ones<double>(1, 3);
         matrix<double> cache = Dm_[i];
-        volume_[i] = fabs(det(cache)) / 6.0;   // det method will change the parameter matrix!!!
+        volume_[i] = fabs(det(cache)) / 6.0;   // det will change parameter because of in place LU decomposition
         if ( inv(Dm_[i]) ) {
             cerr << "[INFO] degenerated tet.\n";
         }

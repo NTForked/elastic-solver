@@ -37,10 +37,10 @@ StVKSimulator::StVKSimulator(const zjucad::matrix::matrix<size_t> &tets,
 
     // comupte lame first & second parameters
     // according to Young's modulus and Possion ratio
-    double E = pt_.get<double>("stvk.Young_modulus");
-    double v = pt_.get<double>("stvk.Poisson_ratio");
+    double E = pt_.get<double>("stvk.YoungModulus", 2e6);
+    double v = pt_.get<double>("stvk.PoissonRatio", 0.45);
     double lambda = E * v / ((1.0 + v) * (1.0 - 2.0 * v));
-    double miu = E / 2.0 * (1.0 + v);
+    double miu = E / (2.0 * (1.0 + v));
 
     pe_.reset(new StVKEnergy(tets_, nods_, lambda, miu));
     x_.resize(pe_->Nx());
@@ -94,12 +94,12 @@ int StVKSimulator::AssembleLHS(Eigen::SparseMatrix<double> &A) {
         cerr << "[INFO] null pointer.\n";
         return __LINE__;
     }
-    pe_->Hes(&disp_[0], &K);
-    pc_->Jac(&disp_[0], &C);
 
+    pe_->Hes(&disp_[0], &K);
     L = (1 + h_ * alpha_) * M_ + h_ * (h_ + beta_) * K;
     L.makeCompressed();
-    C *= h_;
+
+    pc_->Jac(&disp_[0], &C);
     C.makeCompressed();
 
     size_t dim1 = pe_->Nx();
@@ -141,7 +141,7 @@ int StVKSimulator::AssembleRHS(VectorXd &rhs) {
     rhs.resize(dim1 + dim2);
     rhs.head(dim1) = M_ * x_.head(dim1)
             + h_ * (Map<VectorXd>(&fext_[0], fext_.size()) + f);
-    rhs.tail(dim2) = -v;
+    rhs.tail(dim2) = -v / h_;
     return 0;
 }
 

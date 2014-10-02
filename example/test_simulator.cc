@@ -19,7 +19,6 @@ int main(int argc, char *argv[])
     jtf::mesh::tet_mesh_read_from_vtk(pt.get<string>("stvk.model").c_str(), &nods, &tets);
 
     unique_ptr<StVKSimulator> sim(new StVKSimulator(tets, nods, pt));
-
     {
         // set fixed points
         vector<size_t> cons_nodes;
@@ -37,21 +36,20 @@ int main(int argc, char *argv[])
             sim->SetExternalForce(id, f);
         }
     }
-
     // simulate
-    matrix<double> curr_nods;
+    matrix<double> curr_nods = nods;
     for (size_t frm = 0; frm < 100; ++frm) {
         cerr << "[INFO] this is " << frm << " frame.\n";
-        if ( frm == 30 )
-            sim->ClearExternalForce();
-        sim->Forward();
-        curr_nods = nods + sim->disp();
         {
             stringstream ss;
             ss << pt.get<string>("stvk.output_path") << "elastic_" << frm << ".vtk";
             ofstream os(ss.str());
             tet2vtk(os, &curr_nods[0], curr_nods.size(2), &tets[0], tets.size(2));
         }
+        if ( frm == 30 )
+            sim->ClearExternalForce();
+        sim->Forward();
+        curr_nods = nods + sim->disp();
     }
     cerr << "[INFO] done.\n";
     return 0;

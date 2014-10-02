@@ -23,9 +23,9 @@ size_t PositionCons::Nf() const {
 
 int PositionCons::Val(const double *x, double *val) const {
     itr_matrix<const double *> dx(3, uc_.size(2), x);
-    itr_matrix<double *> v(3 * idx_.size(), 1, val);
+    itr_matrix<double *> dv(3 * idx_.size(), 1, val);
     for (size_t i = 0; i < idx_.size(); ++i) {
-        v(colon(3 * i, 3 * i + 2)) = w_ * (dx(colon(), idx_[i]) - uc_(colon(), idx_[i]));
+        dv(colon(3 * i, 3 * i + 2)) = w_ * (dx(colon(), idx_[i]) - uc_(colon(), idx_[i]));
     }
     return 0;
 }

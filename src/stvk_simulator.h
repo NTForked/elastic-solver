@@ -29,7 +29,7 @@ private :
     int AssembleLHS(Eigen::SparseMatrix<double> &A);
     int AssembleRHS(Eigen::VectorXd &rhs);
 
-    // geometry model
+    // geometry
     const zjucad::matrix::matrix<size_t> &tets_;
     const zjucad::matrix::matrix<double> &nods_;
 
@@ -37,8 +37,8 @@ private :
     std::shared_ptr<Energy>     pe_;
     std::shared_ptr<Constraint> pc_;
 
-    // physics model
-    boost::property_tree::ptree pt_;
+    // physics
+    boost::property_tree::ptree &pt_;
     double h_, alpha_, beta_;
     Eigen::VectorXd x_;         // store velocity and lagragian multipliers
     zjucad::matrix::matrix<double> disp_;
