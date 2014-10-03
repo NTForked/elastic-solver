@@ -5,6 +5,7 @@
 #include <Eigen/Dense>
 #include <zjucad/matrix/itr_matrix.h>
 #include <zjucad/matrix/io.h>
+#include <hjlib/util/hrclock.h>
 #include "stvk_energy.h"
 #include "position_cons.h"
 #include "mass_matrix.h"
@@ -65,9 +66,11 @@ void StVKSimulator::ClearExternalForce() {
 }
 
 int StVKSimulator::Forward() {
+    hj::util::high_resolution_clock hrc;
+    double start = hrc.ms();
+
     SparseMatrix<double> A;
     VectorXd             b;
-
     AssembleLHS(A);
     AssembleRHS(b);
 
@@ -83,6 +86,7 @@ int StVKSimulator::Forward() {
         return __LINE__;
     }  
     Map<VectorXd>(&disp_[0], disp_.size()) += h_ * x_.head(nods_.size());
+    cerr << "[INFO] time cost: " << hrc.ms() - start << endl << endl;
     return 0;
 }
 
