@@ -1,4 +1,4 @@
-project(stvk-model)
+project(elastic-model)
 cmake_minimum_required(VERSION 2.8)
 
 set(CMAKE_CXX_FLAGS "-fopenmp -fpermissive -std=c++0x ${CMAKE_CXX_FLAGS}")

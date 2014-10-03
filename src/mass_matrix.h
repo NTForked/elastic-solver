@@ -1,5 +1,5 @@
-#ifndef __CJ_MASS_MATRIX_H__
-#define __CJ_MASS_MATRIX_H__
+#ifndef __ELASTIC_MASS_MATRIX_H__
+#define __ELASTIC_MASS_MATRIX_H__
 
 #include <zjucad/matrix/matrix.h>
 #include <Eigen/Sparse>

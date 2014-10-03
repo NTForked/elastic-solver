@@ -9,4 +9,6 @@ add_custom_command(OUTPUT stvk_tet.f90
    COMMAND "maxima" ARGS --userdir=${MAXIMA_DIR} -b stvk_tet.mac
    DEPENDS stvk_tet.mac)
 
-add_library(stvk SHARED ${header} ${source} stvk_tet.f90)
+add_library(elastic SHARED ${header} ${source} stvk_tet.f90)
+
+# install the libraries

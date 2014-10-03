@@ -48,6 +48,8 @@ int main(int argc, char *argv[])
         }
         if ( frm == 30 )
             sim->ClearExternalForce();
+        if ( frm == 50 )
+            sim->ClearFixedPoints();
         sim->Forward();
         curr_nods = nods + sim->disp();
     }

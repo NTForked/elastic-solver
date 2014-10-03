@@ -1,5 +1,5 @@
-#ifndef __CJ_STVK_MODEL_H__
-#define __CJ_STVK_MODEL_H__
+#ifndef __ELASTIC_STVK_MODEL_H__
+#define __ELASTIC_STVK_MODEL_H__
 
 #include <boost/property_tree/ptree.hpp>
 #include <zjucad/matrix/matrix.h>
@@ -20,6 +20,7 @@ public :
                   boost::property_tree::ptree &pt);
     void SetFixedPoints(const std::vector<size_t> &idx,
                         const zjucad::matrix::matrix<double> &uc);
+    void ClearFixedPoints();
     void SetExternalForce(const size_t idx, const double *force);
     void ClearExternalForce();
     int Forward();

@@ -1,5 +1,5 @@
-#ifndef __CJ_MATH_FUNCTION_H__
-#define __CJ_MATH_FUNCTION_H__
+#ifndef __ELASTIC_MATH_FUNCTION_H__
+#define __ELASTIC_MATH_FUNCTION_H__
 
 #include <Eigen/Sparse>
 

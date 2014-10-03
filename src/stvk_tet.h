@@ -1,5 +1,5 @@
-#ifndef __CJ_STVK_TET_H__
-#define __CJ_STVK_TET_H__
+#ifndef __ELASTIC_STVK_TET_H__
+#define __ELASTIC_STVK_TET_H__
 
 extern "C" {
 

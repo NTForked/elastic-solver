@@ -51,6 +51,11 @@ void StVKSimulator::SetFixedPoints(const vector<size_t> &idx,
     x_.setZero();
 }
 
+void StVKSimulator::ClearFixedPoints() {
+    if ( pc_.get() )
+        pc_.reset();
+}
+
 void StVKSimulator::SetExternalForce(const size_t idx, const double *force) {
     fext_(colon(), idx) = itr_matrix<const double *>(3, 1, force);
 }
@@ -86,34 +91,41 @@ matrix<double>& StVKSimulator::disp() {
 }
 
 int StVKSimulator::AssembleLHS(Eigen::SparseMatrix<double> &A) {
-    SparseMatrix<double> K, C, L;
-    vector<Triplet<double>> trips;
-    if ( !pe_.get() || !pc_.get() ) {
-        cerr << "[INFO] null pointer.\n";
+    if ( !pe_.get() ) {
+        cerr << "[INFO] no energy to drive the deformation!\n";
         return __LINE__;
     }
 
+    SparseMatrix<double> K, C, L;
+    size_t dim1, dim2;
+
+    dim1 = pe_->Nx();
     pe_->Hes(&disp_[0], &K);
     L = (1 + h_ * alpha_) * M_ + h_ * (h_ + beta_) * K;
     L.makeCompressed();
 
-    pc_->Jac(&disp_[0], &C);
-    C.makeCompressed();
-
-    size_t dim1 = pe_->Nx();
-    size_t dim2 = pc_->Nf();
+    if ( pc_.get() ) {
+        dim2 = pc_->Nf();
+        pc_->Jac(&disp_[0], &C);
+        C.makeCompressed();
+    } else {
+        dim2 = 0;
+    }
 
     // [ L  CT ]|x  | = [Mv + h(fext - f) ]
     // [ C   0 ]|lam|   [  C(uc - u) / h  ]
+    vector<Triplet<double>> trips;
     for (size_t j = 0; j < dim1; ++j) {
         for (size_t cnt = L.outerIndexPtr()[j]; cnt < L.outerIndexPtr()[j + 1]; ++cnt) {
             trips.push_back(Triplet<double>(L.innerIndexPtr()[cnt], j, L.valuePtr()[cnt]));
         }
     }
-    for (size_t j = 0; j < dim1; ++j) {
-        for (size_t cnt = C.outerIndexPtr()[j]; cnt < C.outerIndexPtr()[j + 1]; ++cnt) {
-            trips.push_back(Triplet<double>(dim1 + C.innerIndexPtr()[cnt], j, C.valuePtr()[cnt]));
-            trips.push_back(Triplet<double>(j, C.innerIndexPtr()[cnt] + dim1, C.valuePtr()[cnt]));
+    if ( pc_.get() ) {
+        for (size_t j = 0; j < dim1; ++j) {
+            for (size_t cnt = C.outerIndexPtr()[j]; cnt < C.outerIndexPtr()[j + 1]; ++cnt) {
+                trips.push_back(Triplet<double>(dim1 + C.innerIndexPtr()[cnt], j, C.valuePtr()[cnt]));
+                trips.push_back(Triplet<double>(j, C.innerIndexPtr()[cnt] + dim1, C.valuePtr()[cnt]));
+            }
         }
     }
     A.resize(dim1 + dim2, dim1 + dim2);
@@ -124,22 +136,32 @@ int StVKSimulator::AssembleLHS(Eigen::SparseMatrix<double> &A) {
 }
 
 int StVKSimulator::AssembleRHS(VectorXd &rhs) {
-    if ( !pe_.get() || !pc_.get() ) {
-        cerr << "[INFO] null pointer.\n";
+    if ( !pe_.get() ) {
+        cerr << "[INFO] no energy to drive the deformation!\n";
         return __LINE__;
     }
-    size_t dim1 = pe_->Nx();
-    size_t dim2 = pc_->Nf();
+    size_t dim1, dim2;
 
-    VectorXd f(dim1); f.setZero();
-    VectorXd v(dim2); v.setZero();
+    dim1 = pe_->Nx();
+    VectorXd f(dim1);
+    f.setZero();
     pe_->Gra(&disp_[0], f.data());
-    pc_->Val(&disp_[0], v.data());
+
+    VectorXd v;
+    if ( pc_.get() ) {
+        dim2 = pc_->Nf();
+        v.resize(dim2);
+        v.setZero();
+        pc_->Val(&disp_[0], v.data());
+    } else {
+        dim2 = 0;
+    }
 
     rhs.resize(dim1 + dim2);
     rhs.head(dim1) = M_ * x_.head(dim1)
             + h_ * (Map<VectorXd>(&fext_[0], fext_.size()) - f);
-    rhs.tail(dim2) = -v / h_;
+    if ( pc_.get() )
+        rhs.tail(dim2) = -v / h_;
     return 0;
 }
 

@@ -1,5 +1,5 @@
-#ifndef __CJ_STVK_ENERGY_H__
-#define __CJ_STVK_ENERGY_H__
+#ifndef __ELASTIC_STVK_ENERGY_H__
+#define __ELASTIC_STVK_ENERGY_H__
 
 #include <zjucad/matrix/matrix.h>
 #include "math_function.h"
