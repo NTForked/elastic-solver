@@ -7,12 +7,12 @@ namespace cj { namespace elastic {
 
 class Energy;
 
-Energy* build_elastic_energy(const zjucad::matrix::matrix<size_t> &tets,
-                             const zjucad::matrix::matrix<double> &nods,
-                             const double lambda,
-                             const double miu,
-                             const std::string type,
-                             const double w = 1);
+Energy* BuildElasticEnergy(const zjucad::matrix::matrix<size_t> &tets,
+                           const zjucad::matrix::matrix<double> &nods,
+                           const double lambda,
+                           const double miu,
+                           const std::string type,
+                           const double w = 1);
 }}
 
 #endif

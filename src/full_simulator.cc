@@ -41,7 +41,7 @@ StVKSimulator::StVKSimulator(const zjucad::matrix::matrix<size_t> &tets,
     string model = pt_.get<string>("elastic.consitutive_model");
 
     try {
-        pe_.reset(build_elastic_energy(tets_, nods_, lambda, miu, model));
+        pe_.reset(BuildElasticEnergy(tets_, nods_, lambda, miu, model));
         x_.resize(pe_->Nx());
         x_.setZero();
     } catch (...) {

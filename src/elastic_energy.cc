@@ -196,12 +196,20 @@ private :
 
 };
 
-Energy* build_elastic_energy(const matrix<size_t> &tets,
-                             const matrix<double> &nods,
-                             const double lambda,
-                             const double miu,
-                             const string type,
-                             const double w) {
+class CorotatedLinearEnergy : public Energy {
+
+};
+
+class NeohookeanEnergy : public Energy {
+
+};
+
+Energy* BuildElasticEnergy(const matrix<size_t> &tets,
+                           const matrix<double> &nods,
+                           const double lambda,
+                           const double miu,
+                           const string type,
+                           const double w) {
     if ( type == "linear_elastic" ) {
         cerr << "[INFO] linear elastic model.\n";
         return new LinearElasticEnergy(tets, nods, lambda, miu, w);
@@ -210,11 +218,12 @@ Energy* build_elastic_energy(const matrix<size_t> &tets,
         return new StVKEnergy(tets, nods, lambda, miu, w);
     } else if ( type == "corotated" ) {
         cerr << "[INFO] corotated elastic model.\n";
+//        return new CorotatedLinearEnergy;
     } else if ( type == "neohookean" ) {
         cerr << "[INFO] neohookean elastic model.\n";
+//        return new NeohookeanEnergy;
     } else {
         throw exception();
-        return nullptr;
     }
 }
 
