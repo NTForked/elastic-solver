@@ -1,4 +1,4 @@
-#include "stvk_simulator.h"
+#include "full_simulator.h"
 
 #include <iostream>
 #include <Eigen/UmfPackSupport>
@@ -6,7 +6,7 @@
 #include <zjucad/matrix/itr_matrix.h>
 #include <zjucad/matrix/io.h>
 #include <hjlib/util/hrclock.h>
-#include "stvk_energy.h"
+#include "elastic_energy.h"
 #include "position_cons.h"
 #include "mass_matrix.h"
 
@@ -20,33 +20,40 @@ StVKSimulator::StVKSimulator(const zjucad::matrix::matrix<size_t> &tets,
                              const zjucad::matrix::matrix<double> &nods,
                              boost::property_tree::ptree &pt)
     : tets_(tets), nods_(nods), pt_(pt) {
-    h_    = pt_.get<double>("stvk.time_step");
-    alpha_= pt_.get<double>("stvk.alpha");
-    beta_ = pt_.get<double>("stvk.beta");
+    h_    = pt_.get<double>("elastic.time_step");
+    alpha_= pt_.get<double>("elastic.alpha");
+    beta_ = pt_.get<double>("elastic.beta");
     disp_ = zeros<double>(3, nods_.size(2));
     fext_ = zeros<double>(3, nods_.size(2));
 
     // set mass matrix, here we want an unlumped matrix
-    double dens = pt_.get<double>("stvk.density");
+    double dens = pt_.get<double>("elastic.density");
     MassMatrix mass_calculator(tets_, nods_, dens);
     mass_calculator.Compute(M_, false);
 
     // comupte lame first & second parameters
     // according to Young's modulus and Possion ratio
-    double E = pt_.get<double>("stvk.YoungModulus", 2e6);
-    double v = pt_.get<double>("stvk.PoissonRatio", 0.45);
+    double E = pt_.get<double>("elastic.YoungModulus", 2e6);
+    double v = pt_.get<double>("elastic.PoissonRatio", 0.45);
     double lambda = E * v / ((1.0 + v) * (1.0 - 2.0 * v));
     double miu = E / (2.0 * (1.0 + v));
 
-    pe_.reset(new StVKEnergy(tets_, nods_, lambda, miu));
-    x_.resize(pe_->Nx());
-    x_.setZero();
+    string model = pt_.get<string>("elastic.consitutive_model");
+
+    try {
+        pe_.reset(build_elastic_energy(tets_, nods_, lambda, miu, model));
+        x_.resize(pe_->Nx());
+        x_.setZero();
+    } catch (...) {
+        cerr << "[INFO] error: in building elastic energy, and the prgram will exit.\n";
+        exit(0);
+    }
 }
 
 void StVKSimulator::SetFixedPoints(const vector<size_t> &idx,
                                    const matrix<double> &uc) {
     cerr << "[INFO] the number of fixed points is: " << idx.size() << endl;
-    double pos_penalty = pt_.get<double>("stvk.pos_penalty");
+    double pos_penalty = pt_.get<double>("elastic.pos_penalty");
     pc_.reset(new PositionCons(idx, uc));
     x_.resize(pe_->Nx() + pc_->Nf());
     x_.setZero();

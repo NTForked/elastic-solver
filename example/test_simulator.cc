@@ -2,7 +2,7 @@
 #include <boost/property_tree/json_parser.hpp>
 
 #include <jtflib/mesh/io.h>
-#include "src/stvk_simulator.h"
+#include "src/full_simulator.h"
 #include "src/vtk.h"
 
 using namespace std;
@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 
     matrix<size_t> tets;
     matrix<double> nods;
-    jtf::mesh::tet_mesh_read_from_vtk(pt.get<string>("stvk.model").c_str(), &nods, &tets);
+    jtf::mesh::tet_mesh_read_from_vtk(pt.get<string>("elastic.model").c_str(), &nods, &tets);
 
     unique_ptr<StVKSimulator> sim(new StVKSimulator(tets, nods, pt));
     {
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
         cerr << "[INFO] this is " << frm << " frame.\n";
         {
             stringstream ss;
-            ss << pt.get<string>("stvk.output_path") << "elastic_" << frm << ".vtk";
+            ss << pt.get<string>("elastic.output_path") << "elastic_" << frm << ".vtk";
             ofstream os(ss.str());
             tet2vtk(os, &curr_nods[0], curr_nods.size(2), &tets[0], tets.size(2));
         }

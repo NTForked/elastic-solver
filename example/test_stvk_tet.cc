@@ -7,7 +7,7 @@
 #include <zjucad/matrix/itr_matrix.h>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
-#include "src/stvk_tet.h"
+#include "src/constitutive.h"
 #include "src/vtk.h"
 
 using namespace std;

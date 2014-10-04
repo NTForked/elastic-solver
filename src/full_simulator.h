@@ -1,5 +1,5 @@
-#ifndef __ELASTIC_STVK_MODEL_H__
-#define __ELASTIC_STVK_MODEL_H__
+#ifndef __ELASTIC_FULL_SIMULATOR_H__
+#define __ELASTIC_FULL_SIMULATOR_H__
 
 #include <boost/property_tree/ptree.hpp>
 #include <zjucad/matrix/matrix.h>

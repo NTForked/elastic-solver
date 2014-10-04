@@ -1,7 +1,8 @@
 {
-  "stvk" :
+  "elastic" :
   {
 	"model" : "/home/jerry/usr/workspace/elastic-model/dat/cylinder.vtk",
+	"consitutive_model" : "linear_elastic",
 	"time_step" : 0.005,
 	"alpha" : 0.0,
 	"beta" : 0.0,
