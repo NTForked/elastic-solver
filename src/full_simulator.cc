@@ -78,8 +78,9 @@ int StVKSimulator::Forward() {
 
     SparseMatrix<double> A;
     VectorXd             b;
-    AssembleLHS(A);
-    AssembleRHS(b);
+    int flagA = AssembleLHS(A);
+    int flagB = AssembleRHS(b);
+    assert(!flagA && !flagB);
 
     UmfPackLU<SparseMatrix<double>> solver;
     solver.compute(A);
