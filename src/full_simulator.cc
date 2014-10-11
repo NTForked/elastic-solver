@@ -10,9 +10,8 @@
 #include "position_cons.h"
 #include "mass_matrix.h"
 
-using namespace std;
+
 using namespace zjucad::matrix;
-using namespace Eigen;
 
 namespace cj { namespace elastic {
 
@@ -38,21 +37,21 @@ StVKSimulator::StVKSimulator(const zjucad::matrix::matrix<size_t> &tets,
     double lambda = E * v / ((1.0 + v) * (1.0 - 2.0 * v));
     double miu = E / (2.0 * (1.0 + v));
 
-    string model = pt_.get<string>("elastic.consitutive_model");
+    std::string model = pt_.get<std::string>("elastic.consitutive_model");
 
     try {
         pe_.reset(BuildElasticEnergy(tets_, nods_, lambda, miu, model));
         x_.resize(pe_->Nx());
         x_.setZero();
     } catch (...) {
-        cerr << "[INFO] error: in building elastic energy, and the prgram will exit.\n";
+        std::cerr << "[INFO] error: in building elastic energy, and the prgram will exit.\n";
         exit(0);
     }
 }
 
-void StVKSimulator::SetFixedPoints(const vector<size_t> &idx,
+void StVKSimulator::SetFixedPoints(const std::vector<size_t> &idx,
                                    const matrix<double> &uc) {
-    cerr << "[INFO] the number of fixed points is: " << idx.size() << endl;
+    std::cerr << "[INFO] the number of fixed points is: " << idx.size() << "\n";
     double pos_penalty = pt_.get<double>("elastic.pos_penalty");
     pc_.reset(new PositionCons(idx, uc));
     x_.resize(pe_->Nx() + pc_->Nf());
@@ -76,25 +75,25 @@ int StVKSimulator::Forward() {
     hj::util::high_resolution_clock hrc;
     double start = hrc.ms();
 
-    SparseMatrix<double> A;
-    VectorXd             b;
+    Eigen::SparseMatrix<double> A;
+    Eigen::VectorXd             b;
     int flagA = AssembleLHS(A);
     int flagB = AssembleRHS(b);
     assert(!flagA && !flagB);
 
-    UmfPackLU<SparseMatrix<double>> solver;
+    Eigen::UmfPackLU<Eigen::SparseMatrix<double>> solver;
     solver.compute(A);
-    if ( solver.info() != Success ) {
-        cerr << "[INFO] decomposition failed.\n";
+    if ( solver.info() != Eigen::Success ) {
+        std::cerr << "[INFO] decomposition failed.\n";
         return __LINE__;
     }
     x_ = solver.solve(b);
-    if ( solver.info() != Success ) {
-        cerr << "[INFO] solve failed.\n";
+    if ( solver.info() != Eigen::Success ) {
+        std::cerr << "[INFO] solve failed.\n";
         return __LINE__;
     }  
-    Map<VectorXd>(&disp_[0], disp_.size()) += h_ * x_.head(nods_.size());
-    cerr << "[INFO] time cost: " << hrc.ms() - start << endl << endl;
+    Eigen::Map<Eigen::VectorXd>(&disp_[0], disp_.size()) += h_ * x_.head(nods_.size());
+    std::cerr << "[INFO] time cost: " << hrc.ms() - start << "\n\n";
     return 0;
 }
 
@@ -104,11 +103,11 @@ matrix<double>& StVKSimulator::disp() {
 
 int StVKSimulator::AssembleLHS(Eigen::SparseMatrix<double> &A) {
     if ( !pe_.get() ) {
-        cerr << "[INFO] no energy to drive the deformation!\n";
+        std::cerr << "[INFO] no energy to drive the deformation!\n";
         return __LINE__;
     }
 
-    SparseMatrix<double> K, C, L;
+    Eigen::SparseMatrix<double> K, C, L;
     size_t dim1, dim2;
 
     dim1 = pe_->Nx();
@@ -126,17 +125,17 @@ int StVKSimulator::AssembleLHS(Eigen::SparseMatrix<double> &A) {
 
     // [ L  CT ]|x  | = [Mv + h(fext - f) ]
     // [ C   0 ]|lam|   [  C(uc - u) / h  ]
-    vector<Triplet<double>> trips;
+    std::vector<Eigen::Triplet<double>> trips;
     for (size_t j = 0; j < dim1; ++j) {
         for (size_t cnt = L.outerIndexPtr()[j]; cnt < L.outerIndexPtr()[j + 1]; ++cnt) {
-            trips.push_back(Triplet<double>(L.innerIndexPtr()[cnt], j, L.valuePtr()[cnt]));
+            trips.push_back(Eigen::Triplet<double>(L.innerIndexPtr()[cnt], j, L.valuePtr()[cnt]));
         }
     }
     if ( pc_.get() ) {
         for (size_t j = 0; j < dim1; ++j) {
             for (size_t cnt = C.outerIndexPtr()[j]; cnt < C.outerIndexPtr()[j + 1]; ++cnt) {
-                trips.push_back(Triplet<double>(dim1 + C.innerIndexPtr()[cnt], j, C.valuePtr()[cnt]));
-                trips.push_back(Triplet<double>(j, C.innerIndexPtr()[cnt] + dim1, C.valuePtr()[cnt]));
+                trips.push_back(Eigen::Triplet<double>(dim1 + C.innerIndexPtr()[cnt], j, C.valuePtr()[cnt]));
+                trips.push_back(Eigen::Triplet<double>(j, C.innerIndexPtr()[cnt] + dim1, C.valuePtr()[cnt]));
             }
         }
     }
@@ -147,19 +146,19 @@ int StVKSimulator::AssembleLHS(Eigen::SparseMatrix<double> &A) {
     return 0;
 }
 
-int StVKSimulator::AssembleRHS(VectorXd &rhs) {
+int StVKSimulator::AssembleRHS(Eigen::VectorXd &rhs) {
     if ( !pe_.get() ) {
-        cerr << "[INFO] no energy to drive the deformation!\n";
+        std::cerr << "[INFO] no energy to drive the deformation!\n";
         return __LINE__;
     }
     size_t dim1, dim2;
 
     dim1 = pe_->Nx();
-    VectorXd f(dim1);
+    Eigen::VectorXd f(dim1);
     f.setZero();
     pe_->Gra(&disp_[0], f.data());
 
-    VectorXd v;
+    Eigen::VectorXd v;
     if ( pc_.get() ) {
         dim2 = pc_->Nf();
         v.resize(dim2);
@@ -171,7 +170,7 @@ int StVKSimulator::AssembleRHS(VectorXd &rhs) {
 
     rhs.resize(dim1 + dim2);
     rhs.head(dim1) = M_ * x_.head(dim1)
-            + h_ * (Map<VectorXd>(&fext_[0], fext_.size()) - f);
+            + h_ * (Eigen::Map<Eigen::VectorXd>(&fext_[0], fext_.size()) - f);
     if ( pc_.get() )
         rhs.tail(dim2) = -v / h_;
     return 0;

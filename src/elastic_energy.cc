@@ -8,7 +8,6 @@
 #include "math_function.h"
 #include "constitutive.h"
 
-using namespace std;
 using namespace zjucad::matrix;
 
 namespace cj { namespace elastic {
@@ -33,7 +32,7 @@ public :
             matrix<double> cache = Dm_[i];
             volume_[i] = fabs(det(cache)) / 6.0;   // det will change parameter because of in place LU decomposition
             if ( inv(Dm_[i]) ) {
-                cerr << "[INFO] degenerated tet.\n";
+                std::cerr << "[INFO] degenerated tet.\n";
             }
         }
     }
@@ -75,7 +74,7 @@ public :
     int Hes(const double *x, Eigen::SparseMatrix<double> *hes) const {
         itr_matrix<const double *> dx(3, nods_.size(2), x);
         matrix<double> nods = nods_ + dx;
-        vector<Eigen::Triplet<double>> trips;
+        std::vector<Eigen::Triplet<double>> trips;
         for (size_t i = 0;  i < tets_.size(2); ++i) {
             matrix<double> tet_nods = nods(colon(), tets_(colon(), i));
             matrix<double> H(12, 12);
@@ -123,7 +122,7 @@ public :
             matrix<double> cache = Dm_[i];
             volume_[i] = fabs(det(cache)) / 6.0;   // det will change parameter because of in place LU decomposition
             if ( inv(Dm_[i]) ) {
-                cerr << "[INFO] degenerated tet.\n";
+                std::cerr << "[INFO] degenerated tet.\n";
             }
         }
     }
@@ -165,7 +164,7 @@ public :
     int Hes(const double *x, Eigen::SparseMatrix<double> *hes) const {
         itr_matrix<const double *> dx(3, nods_.size(2), x);
         matrix<double> nods = nods_ + dx;
-        vector<Eigen::Triplet<double>> trips;
+        std::vector<Eigen::Triplet<double>> trips;
         for (size_t i = 0;  i < tets_.size(2); ++i) {
             matrix<double> tet_nods = nods(colon(), tets_(colon(), i));
             matrix<double> H(12, 12);
@@ -208,22 +207,22 @@ Energy* BuildElasticEnergy(const matrix<size_t> &tets,
                            const matrix<double> &nods,
                            const double lambda,
                            const double miu,
-                           const string type,
+                           const std::string &type,
                            const double w) {
     if ( type == "linear_elastic" ) {
-        cerr << "[INFO] linear elastic model.\n";
+        std::cerr << "[INFO] linear elastic model.\n";
         return new LinearElasticEnergy(tets, nods, lambda, miu, w);
     } else if ( type == "stvk" ) {
-        cerr << "[INFO] stvk elastic model.\n";
+        std::cerr << "[INFO] stvk elastic model.\n";
         return new StVKEnergy(tets, nods, lambda, miu, w);
     } else if ( type == "corotated" ) {
-        cerr << "[INFO] corotated elastic model.\n";
+        std::cerr << "[INFO] corotated elastic model.\n";
 //        return new CorotatedLinearEnergy;
     } else if ( type == "neohookean" ) {
-        cerr << "[INFO] neohookean elastic model.\n";
+        std::cerr << "[INFO] neohookean elastic model.\n";
 //        return new NeohookeanEnergy;
     } else {
-        throw exception();
+        throw std::exception();
     }
 }
 
