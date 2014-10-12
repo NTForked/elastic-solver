@@ -38,6 +38,19 @@ block(
   ),  
   with_stdout(f, val_jac_hes_to_f90(linear_elastic_tet, [X, D, volume, lam, miu])),
   
+  /* noehookean */
+  neohookean_tet(X, D, volume, lam, miu) := block(
+  [DS, F, I1, I3],
+  DS : addcol(col(X, 2) - col(X, 1), 
+	      col(X, 3) - col(X, 1),
+	      col(X, 4) - col(X, 1)),
+  F : DS . D,
+  I1 : mat_trace(transpose(F) . F),
+  I3 : determinant(transpose(F) . F),
+  volume * ( 0.5  * miu *  ( I1 - log(I3) - 3 ) + 0.125 * lam * log(I3)^2 )
+  ),
+  with_stdout(f, val_jac_hes_to_f90(neohookean_tet, [X, D, volume, lam, miu])),
+  
   return()
 )$
 
