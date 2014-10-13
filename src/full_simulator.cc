@@ -5,7 +5,7 @@
 #include <Eigen/Dense>
 #include <zjucad/matrix/itr_matrix.h>
 #include <zjucad/matrix/io.h>
-//#include <hjlib/util/hrclock.h>
+#include <hjlib/util/hrclock.h>
 #include "elastic_energy.h"
 #include "position_cons.h"
 #include "mass_matrix.h"
@@ -32,8 +32,8 @@ StVKSimulator::StVKSimulator(const zjucad::matrix::matrix<size_t> &tets,
 
     // comupte lame first & second parameters
     // according to Young's modulus and Possion ratio
-    double E = pt_.get<double>("elastic.YoungModulus", 2e6);
-    double v = pt_.get<double>("elastic.PoissonRatio", 0.45);
+    double E = pt_.get<double>("elastic.Young_modulus");
+    double v = pt_.get<double>("elastic.Poisson_ratio");
     double lambda = E * v / ((1.0 + v) * (1.0 - 2.0 * v));
     double miu = E / (2.0 * (1.0 + v));
 
@@ -72,8 +72,8 @@ void StVKSimulator::ClearExternalForce() {
 }
 
 int StVKSimulator::Forward() {
-    //hj::util::high_resolution_clock hrc;
-    //double start = hrc.ms();
+    hj::util::high_resolution_clock hrc;
+    double start = hrc.ms();
 
     Eigen::SparseMatrix<double> A;
     Eigen::VectorXd             b;
@@ -93,7 +93,7 @@ int StVKSimulator::Forward() {
         return __LINE__;
     }  
     Eigen::Map<Eigen::VectorXd>(&disp_[0], disp_.size()) += h_ * x_.head(nods_.size());
-    //std::cerr << "[INFO] time cost: " << hrc.ms() - start << "\n\n";
+    std::cerr << "[INFO] time cost: " << hrc.ms() - start << "\n\n";
     return 0;
 }
 

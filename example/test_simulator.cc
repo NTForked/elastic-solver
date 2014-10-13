@@ -5,6 +5,8 @@
 #include "src/full_simulator.h"
 #include "src/vtk.h"
 
+#define _COMPRESS_MODEL_
+
 using namespace std;
 using namespace zjucad::matrix;
 using namespace cj::elastic;
@@ -14,6 +16,9 @@ void OutputMesh(const matrix<size_t> &tets,
                 const matrix<double> &nods,
                 const size_t         frm,
                 const ptree          &pt);
+
+bool kCOMPRESS = false;
+bool kTWIST = false;
 
 int main(int argc, char *argv[])
 {
@@ -36,7 +41,10 @@ int main(int argc, char *argv[])
         sim->SetFixedPoints(cons_nodes, uc);
     }
 
-    {
+    kCOMPRESS = pt.get<bool>("elastic.compress");
+    kTWIST = pt.get<bool>("elastic.twist");
+
+    if ( kCOMPRESS ) {
         // set compression force
         const double f[3] = {0, 0, -5000};
         for (size_t idx = 66; idx <= 89; ++idx) {
@@ -49,27 +57,33 @@ int main(int argc, char *argv[])
     for (size_t frm = 0; frm < 300; ++frm) {
         cerr << "[INFO] this is " << frm << " frame.\n";
         OutputMesh(tets, curr_nods, frm, pt);
-        // twist the model
-//        if ( frm < 100)
-//        {
-//            const double force = 2500;
-//            matrix<double> dir = curr_nods(colon(), 21) - curr_nods(colon(), 41);
-//            dir /= norm(dir);
-//            const double f[3] = {force*dir(0, 0), force*dir(1, 0), force*dir(2, 0)};
-//            sim->SetExternalForce(21, f);
-//            for (int id = 22; id <= 41; ++id) {
-//                matrix<double> dir = curr_nods(colon(), id) - curr_nods(colon(), id - 1);
-//                dir /= norm(dir);
-//                const double f[3] = {force*dir(0, 0), force*dir(1, 0), force*dir(2, 0)};
-//                sim->SetExternalForce(id, f);
-//            }
-//        }
-//        if ( frm == 100 ) {
-//            sim->ClearExternalForce();
-//            sim->ClearFixedPoints();
-//        }
-           if ( frm == 50 )
-               sim->ClearExternalForce();
+
+        if ( kTWIST ) { // twist the model
+            if ( frm < 100)
+            {
+                const double force = 2500;
+                matrix<double> dir = curr_nods(colon(), 21) - curr_nods(colon(), 41);
+                dir /= norm(dir);
+                const double f[3] = {force*dir(0, 0), force*dir(1, 0), force*dir(2, 0)};
+                sim->SetExternalForce(21, f);
+                for (int id = 22; id <= 41; ++id) {
+                    matrix<double> dir = curr_nods(colon(), id) - curr_nods(colon(), id - 1);
+                    dir /= norm(dir);
+                    const double f[3] = {force*dir(0, 0), force*dir(1, 0), force*dir(2, 0)};
+                    sim->SetExternalForce(id, f);
+                }
+            }
+            if ( frm == 100 ) {
+                sim->ClearExternalForce();
+                sim->ClearFixedPoints();
+            }
+        }
+
+        if ( kCOMPRESS ) {
+            if ( frm == 50 )
+                sim->ClearExternalForce();
+        }
+
         sim->Forward();
         curr_nods = nods + sim->disp();
     }

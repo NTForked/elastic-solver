@@ -2,11 +2,13 @@
   "elastic" :
   {
 	"model" : "/home/jerry/usr/workspace/elastic-model/dat/cylinder.vtk",
+	"compress" : 1,
+	"twist" : 0,
 	"consitutive_model" : "neohookean",
 	"time_step" : 0.005,
 	"alpha" : 0.0,
 	"beta" : 0.0,
-	"Young_modulus" : 0.1,
+	"Young_modulus" : 700000,
 	"Poisson_ratio" : 0.45,
 	"density" : 1000,
 	"pos_penalty" : 100.0,
