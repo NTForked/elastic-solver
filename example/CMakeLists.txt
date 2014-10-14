@@ -15,3 +15,12 @@ hj-util
 ${UMFPACK_LIBRARIES}
 ${LAPACK_LIBRARIES}
 )
+
+add_executable(test_multiobjects test_multiobjects.cc)
+target_link_libraries(test_multiobjects
+elastic
+jtf-mesh
+hj-util
+${UMFPACK_LIBRARIES}
+${LAPACK_LIBRARIES}
+)

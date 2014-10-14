@@ -25,9 +25,18 @@ int main(int argc, char *argv[])
     boost::property_tree::ptree pt;
     boost::property_tree::json_parser::read_json(argv[1], pt);
 
-    matrix<size_t> tets;
-    matrix<double> nods;
-    jtf::mesh::tet_mesh_read_from_vtk(pt.get<string>("elastic.model").c_str(), &nods, &tets);
+    matrix<size_t> TETS;
+    matrix<double> NODS;
+    jtf::mesh::tet_mesh_read_from_vtk(pt.get<string>("elastic.model").c_str(), &NODS, &TETS);
+
+    matrix<size_t> tets(4, TETS.size(2) * 2);
+    matrix<double> nods(3, NODS.size(2) * 2);
+    tets(colon(), colon(0, TETS.size(2) - 1)) = TETS;
+    tets(colon(), colon(TETS.size(2), 2 * TETS.size(2) - 1)) = TETS + NODS.size(2) * ones<size_t>(4, TETS.size(2));
+
+    nods(colon(), colon(0, NODS.size(2) - 1)) = NODS;
+    nods(colon(), colon(NODS.size(2), 2 * NODS.size(2) - 1)) = NODS + ones<double>(3, NODS.size(2));
+
 
     unique_ptr<StVKSimulator> sim(new StVKSimulator(tets, nods, pt));
     {
