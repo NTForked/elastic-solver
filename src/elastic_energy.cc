@@ -78,6 +78,7 @@ public :
         itr_matrix<const double *> dx(3, nods_.size(2), x);
         matrix<double> nods = nods_ + dx;
         itr_matrix<double *> g(nods_.size(), 1, gra);
+#pragma omp parallel for
         for (size_t i = 0; i < tets_.size(2); ++i) {
             matrix<double> tet_nods = nods(colon(), tets_(colon(), i));
             matrix<double> g_(12);
@@ -98,6 +99,7 @@ public :
                     break;
                 }
             }
+#pragma omp critical
             for (size_t k = 0; k < 12; ++k)
                 g[tets_(k / 3, i) * 3 + k % 3] += g_[k];
         }
@@ -109,6 +111,7 @@ public :
         itr_matrix<const double *> dx(3, nods_.size(2), x);
         matrix<double> nods = nods_ + dx;
         std::vector<Eigen::Triplet<double>> trips;
+#pragma omp parallel for
         for (size_t i = 0;  i < tets_.size(2); ++i) {
             matrix<double> tet_nods = nods(colon(), tets_(colon(), i));
             matrix<double> H(12, 12);
@@ -129,6 +132,7 @@ public :
                     break;
                 }
             }
+#pragma omp critical
             for (size_t p = 0; p < 12; ++p) {
                 for (size_t q = 0; q < 12; ++q) {
                     size_t I = tets_(p / 3, i) * 3 + p % 3;

@@ -41,10 +41,17 @@ private :
     // physics
     boost::property_tree::ptree &pt_;
     double h_, alpha_, beta_;
-    Eigen::VectorXd x_;         // store velocity and lagragian multipliers
+    Eigen::VectorXd x_;         ///< store velocity and lagragian multipliers
     zjucad::matrix::matrix<double> disp_;
     zjucad::matrix::matrix<double> fext_;
     Eigen::SparseMatrix<double> M_;
+};
+
+class ReducedSolver {
+public :
+    void BuildU(); // choose eigenvectors with relative big eigenvalues
+private :
+    void SolveEigen();
 };
 
 }}

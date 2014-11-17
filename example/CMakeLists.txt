@@ -16,6 +16,15 @@ ${UMFPACK_LIBRARIES}
 ${LAPACK_LIBRARIES}
 )
 
+add_executable(test_sofa test_sofa.cc)
+target_link_libraries(test_sofa
+elastic
+jtf-mesh
+hj-util
+${UMFPACK_LIBRARIES}
+${LAPACK_LIBRARIES}
+)
+
 add_executable(test_multiobjects test_multiobjects.cc)
 target_link_libraries(test_multiobjects
 elastic
@@ -23,4 +32,9 @@ jtf-mesh
 hj-util
 ${UMFPACK_LIBRARIES}
 ${LAPACK_LIBRARIES}
+)
+
+add_executable(test_arpack test_arpack.cc)
+target_link_libraries(test_arpack
+${ARPACK_LIBRARIES}
 )

@@ -3,6 +3,10 @@
 
 namespace cj { namespace elastic {
 
+///
+/// @brief The FEMSimulator class, Not completed
+///
+
 class FEMSimulator {
 public :
     FEMSimulator();
