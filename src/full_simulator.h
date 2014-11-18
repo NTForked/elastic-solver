@@ -49,9 +49,31 @@ private :
 
 class ReducedSolver {
 public :
-    void BuildU(); // choose eigenvectors with relative big eigenvalues
+    ReducedSolver(const zjucad::matrix::matrix<size_t> &tets,
+                  const zjucad::matrix::matrix<double> &nods,
+                  boost::property_tree::ptree &pt);
+    int Init();
+    int BuildU();
+    void VisualizeVibration();
 private :
-    void SolveEigen();
+    ///< geometry
+    const zjucad::matrix::matrix<size_t> &tets_;
+    const zjucad::matrix::matrix<double> &nods_;
+
+    ///< energies and constraints
+    std::shared_ptr<Energy> pe_;
+    std::shared_ptr<Constraint> pc_;
+
+    ///< physics configuration
+    boost::property_tree::ptree &pt_;
+    double h_, alpha_, beta_;
+    zjucad::matrix::matrix<double> disp_;
+    zjucad::matrix::matrix<double> fext_;
+    Eigen::DiagonalMatrix<double, -1> M_;
+
+    ///< Reduced base
+    Eigen::MatrixXd U_;
+
 };
 
 }}

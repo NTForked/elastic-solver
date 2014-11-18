@@ -176,7 +176,8 @@ Energy* BuildElasticEnergy(const matrix<size_t> &tets,
         std::cerr << "[INFO] " << type << " elastic model.\n";
         return new MaterialEnergy(tets, nods, lambda, miu, it->second, w);
     } else {
-        throw std::exception();
+//        throw std::exception();
+        return nullptr;
     }
 }
 

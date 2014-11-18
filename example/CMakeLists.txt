@@ -38,3 +38,11 @@ add_executable(test_arpack test_arpack.cc)
 target_link_libraries(test_arpack
 ${ARPACK_LIBRARIES}
 )
+
+add_executable(test_reduced test_reduced.cc)
+target_link_libraries(test_reduced
+elastic
+jtf-mesh
+hj-util
+${UMFPACK_LIBRARIES}
+)

@@ -176,6 +176,46 @@ int StVKSimulator::AssembleRHS(Eigen::VectorXd &rhs) {
     return 0;
 }
 
+//------------------------REDUCED PART-----------------------------------
 
+ReducedSolver::ReducedSolver(const matrix<size_t> &tets,
+                             const matrix<double> &nods,
+                             boost::property_tree::ptree &pt)
+    : tets_(tets), nods_(nods), pt_(pt) { }
+
+int ReducedSolver::Init() {
+    h_ = pt_.get<double>("elastic.time_step");
+    alpha_ = pt_.get<double>("elastic.alpha");
+    beta_ = pt_.get<double>("elastic.beta");
+    disp_ = zeros<double>(3, nods_.size(2));
+    fext_ = zeros<double>(3, nods_.size(2));
+
+    // set mass matrix, here we want an lumped matrix;
+    double dens = pt_.get<double>("elastic.density");
+    MassMatrix calculator(tets_, nods_, dens);
+    Eigen::SparseMatrix<double> M;
+    calculator.Compute(M, true);
+    M_.resize(M.cols());
+    for (size_t i = 0; i < M_.rows(); ++i) // mass lump
+        M_.diagonal()[i] = M.row(i).sum();
+
+    const double E = pt_.get<double>("elastic.Young_modulus");
+    const double v = pt_.get<double>("elastic.Poisson_ratio");
+    const double lambda = E * v / ((1.0 + v) * (1.0 - 2.0 * v));
+    const double miu = E / (2.0 * (1.0 + v));
+
+    std::string material = pt_.get<std::string>("elastic.constitutive_model");
+    pe_.reset(BuildElasticEnergy(tets_, nods_, lambda, miu, material));
+    if ( pe_.get() == nullptr )
+        return __LINE__;
+    return 0;
+}
+
+int ReducedSolver::BuildU() {
+    // modal analysis: solve the generalized
+    // eigenvalue problem Kx = \lambda Mx
+
+    return 0;
+}
 
 }}
