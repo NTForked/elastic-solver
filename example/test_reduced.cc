@@ -3,7 +3,7 @@
 #include <boost/property_tree/json_parser.hpp>
 
 #include <jtflib/mesh/io.h>
-#include "src/full_simulator.h"
+#include "src/simulator.h"
 #include "src/vtk.h"
 
 using namespace std;

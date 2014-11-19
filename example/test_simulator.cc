@@ -2,7 +2,7 @@
 #include <boost/property_tree/json_parser.hpp>
 
 #include <jtflib/mesh/io.h>
-#include "src/full_simulator.h"
+#include "src/simulator.h"
 #include "src/vtk.h"
 
 #define _COMPRESS_MODEL_
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
                 sim->ClearExternalForce();
         }
 
-        sim->Forward();
+        sim->Advance();
         curr_nods = nods + sim->disp();
     }
     cerr << "[INFO] done.\n";

@@ -23,22 +23,22 @@ public :
     void ClearFixedPoints();
     void SetExternalForce(const size_t idx, const double *force);
     void ClearExternalForce();
-    int Forward();
+    int Advance();
     zjucad::matrix::matrix<double>& disp();
 
 private :
     int AssembleLHS(Eigen::SparseMatrix<double> &A);
     int AssembleRHS(Eigen::VectorXd &rhs);
 
-    // geometry
+    ///< geometry
     const zjucad::matrix::matrix<size_t> &tets_;
     const zjucad::matrix::matrix<double> &nods_;
 
-    // energy and constraint
+    ///< energy and constraint
     std::shared_ptr<Energy>     pe_;
     std::shared_ptr<Constraint> pc_;
 
-    // physics
+    ///< physics
     boost::property_tree::ptree &pt_;
     double h_, alpha_, beta_;
     Eigen::VectorXd x_;         ///< store velocity and lagragian multipliers

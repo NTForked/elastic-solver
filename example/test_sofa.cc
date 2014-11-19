@@ -4,7 +4,7 @@
 
 #include <jtflib/mesh/io.h>
 #include <jtflib/mesh/util.h>
-#include "src/full_simulator.h"
+#include "src/simulator.h"
 #include "src/vtk.h"
 
 using namespace std;
@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
         remove_extra_node(tris, verts);
         DRAW_TRI("sofa_tri", i, verts, tris);
 
-        sim->Forward();
+        sim->Advance();
         curr_nods = nods + sim->disp();
     }
 

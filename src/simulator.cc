@@ -1,4 +1,4 @@
-#include "full_simulator.h"
+#include "simulator.h"
 
 #include <iostream>
 #include <Eigen/UmfPackSupport>
@@ -71,7 +71,7 @@ void StVKSimulator::ClearExternalForce() {
     fext_ = zeros<double>(3, nods_.size(2));
 }
 
-int StVKSimulator::Forward() {
+int StVKSimulator::Advance() {
     hj::util::high_resolution_clock hrc;
     double start = hrc.ms();
 

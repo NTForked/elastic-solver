@@ -29,10 +29,10 @@ endif(UMFPACK_FOUND)
 
 # Arpack && Arpack++
 find_package(Arpack REQUIRED)
-find_package(Arpack++ REQUIRED)
-if(Arpack++_FOUND)
-    include_directories(${ARPACK++_INCLUDE_DIR})
-endif(Arpack++_FOUND)
+#find_package(Arpack++ REQUIRED)
+#if(Arpack++_FOUND)
+#    include_directories(${ARPACK++_INCLUDE_DIR})
+#endif(Arpack++_FOUND)
 
 add_subdirectory(src)
 add_subdirectory(example)
