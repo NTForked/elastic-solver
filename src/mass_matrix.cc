@@ -1,5 +1,6 @@
 #include "mass_matrix.h"
 
+#include <iostream>
 #include <hjlib/math/blas_lapack.h>
 #include <zjucad/matrix/lapack.h>
 
@@ -59,7 +60,15 @@ int MassMatrix::MassMatrix::Compute(SparseMatrix<double> &M, bool lumped) {
 }
 
 void MassMatrix::Lump(SparseMatrix<double> &M) {
-
+    vector<Triplet<double>> vec;
+    for (size_t i = 0; i < M.rows(); ++i) {
+        vec.push_back(Triplet<double>(i, i, M.row(i).sum()));
+    }
+    SparseMatrix<double> lumpM;
+    lumpM.resize(M.rows(), M.cols());
+    lumpM.reserve(vec.size());
+    lumpM.setFromTriplets(vec.begin(), vec.end());
+    M = lumpM;
 }
 
 }}

@@ -4,7 +4,7 @@
 	"model" : "/home/jerry/usr/workspace/elastic-model/dat/cylinder.vtk",
 	"compress" : 0,
 	"twist" : 1,
-	"consitutive_model" : "stvk",
+	"consitutive_model" : "linear",
 	"time_step" : 0.005,
 	"alpha" : 0.0,
 	"beta" : 0.0,
@@ -12,6 +12,7 @@
 	"Poisson_ratio" : 0.45,
 	"density" : 1000,
 	"pos_penalty" : 100.0,
+	"basis_number" : 20,
 	"output_path" : "/home/jerry/usr/workspace/elastic-model/result/"
   }
 }

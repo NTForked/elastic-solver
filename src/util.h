@@ -8,39 +8,34 @@
 namespace cj { namespace elastic {
 
 template <typename T>
-int RemoveRowCol(const std::unordered_set<size_t> &idx,
-                 Eigen::SparseMatrix<T> &A,
-                 zjucad::matrix::matrix<size_t> &l2g) {
-    using Eigen::Triplet;
-    using zjucad::matrix::matrix;
-    matrix<size_t> g2l(A.cols());
-    l2g.resize(A.cols() - idx.size());
-    for (size_t i = 0, j = 0; i < g2l.size(); ++i) {
-        if ( idx.find(i) == idx.end() ) {
-            g2l[i] = j;
-            l2g[j] = i;
-            ++j;
-        } else {
-            g2l[i] = -1;
-        }
+int RemoveSparseRowCol(Eigen::SparseMatrix<T> &A,
+                       const std::vector<size_t> g2l) {
+    size_t size = 0;
+    for (size_t i = 0; i < g2l.size(); ++i) {
+        if ( g2l[i] == -1 )
+            ++size;
     }
-    std::vector<Triplet<T>> trips;
+    std::vector<Eigen::Triplet<T>> trips;
     for (size_t j = 0; j < A.cols(); ++j) {
-        for (size_t cnt = A.outerIndexPtr()[j];
-             cnt < A.outerIndexPtr()[j + 1]; ++cnt) {
-            size_t i = A.innerIndexPtr()[cnt];
-            if ( g2l[i] != -1 && g2l[j] != -1 )
-                trips.push_back(Triplet<T>(g2l[i], g2l[j], A.valuePtr()[cnt]));
+        for (typename Eigen::SparseMatrix<T>::InnerIterator it(A, j); it; ++it) {
+            if ( g2l[it.row()] != -1 && g2l[it.col()] != -1 )
+                trips.push_back(Eigen::Triplet<T>(g2l[it.row()], g2l[it.col()], it.value()));
         }
     }
-    const size_t dim = l2g.size();
-    A.resize(dim, dim);
-    A.setZero();
+    A.resize(size, size);
     A.reserve(trips.size());
     A.setFromTriplets(trips.begin(), trips.end());
     return 0;
 }
 
+template <class Mat>
+bool isSymmetric(const Mat &A) {
+    Mat AT = A.transpose();
+    if ( (AT - A).squaredNorm() < 1e-20 ) {
+        return true;
+    }
+    return false;
+}
 
 /// Generalized eigenvalue solver for
 /// vibration modes: Kx = \lambda Mx

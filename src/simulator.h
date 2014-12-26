@@ -10,6 +10,7 @@ namespace cj { namespace elastic {
 
 class Energy;
 class Constraint;
+class ModalAnalyzer;
 
 // displacement based stvk model
 
@@ -53,9 +54,10 @@ public :
                   const zjucad::matrix::matrix<double> &nods,
                   boost::property_tree::ptree &pt);
     int Init();
-    int BuildU();
-    void VisualizeVibration();
-private :
+    int AddElasticEnergy(const double w);
+    int BuildModalBasis();
+    void VisualizeVibrationModes();
+public :
     ///< geometry
     const zjucad::matrix::matrix<size_t> &tets_;
     const zjucad::matrix::matrix<double> &nods_;
@@ -69,10 +71,12 @@ private :
     double h_, alpha_, beta_;
     zjucad::matrix::matrix<double> disp_;
     zjucad::matrix::matrix<double> fext_;
-    Eigen::DiagonalMatrix<double, -1> M_;
+    Eigen::SparseMatrix<double> M_;
 
     ///< Reduced base
+    std::shared_ptr<ModalAnalyzer> basis_builder_;
     Eigen::MatrixXd U_;
+    Eigen::VectorXd freq_;
 
 };
 

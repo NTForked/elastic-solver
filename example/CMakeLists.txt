@@ -46,3 +46,11 @@ jtf-mesh
 hj-util
 ${UMFPACK_LIBRARIES}
 )
+
+add_executable(test_eigen_solver test_eigen_solver.cc)
+target_link_libraries(test_eigen_solver
+elastic
+)
+
+add_executable(test_unit test_unit.cc)
+

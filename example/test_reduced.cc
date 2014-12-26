@@ -23,9 +23,11 @@ int main(int argc, char *argv[])
     matrix<double> nods;
     jtf::mesh::tet_mesh_read_from_vtk(pt.get<string>("elastic.model").c_str(), &nods, &tets);
 
-    cout << "here\n";
     shared_ptr<ReducedSolver> sol(new ReducedSolver(tets, nods, pt));
-    sol->BuildU();
+    sol->Init();
+    sol->AddElasticEnergy(1.0);
+    sol->BuildModalBasis();
+    cout << sol->freq_.head(10) << "\n";
     cout << "[INFO] done\n";
     return 0;
 }

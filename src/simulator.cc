@@ -9,8 +9,11 @@
 #include "elastic_energy.h"
 #include "position_cons.h"
 #include "mass_matrix.h"
+#include "modal_analyzer.h"
+#include "util.h"
 
-
+using namespace std;
+using namespace Eigen;
 using namespace zjucad::matrix;
 
 namespace cj { namespace elastic {
@@ -28,7 +31,7 @@ StVKSimulator::StVKSimulator(const zjucad::matrix::matrix<size_t> &tets,
     // set mass matrix, here we want an unlumped matrix
     double dens = pt_.get<double>("elastic.density");
     MassMatrix mass_calculator(tets_, nods_, dens);
-    mass_calculator.Compute(M_, false);
+    mass_calculator.Compute(M_, true);
 
     // comupte lame first & second parameters
     // according to Young's modulus and Possion ratio
@@ -193,27 +196,45 @@ int ReducedSolver::Init() {
     // set mass matrix, here we want an lumped matrix;
     double dens = pt_.get<double>("elastic.density");
     MassMatrix calculator(tets_, nods_, dens);
-    Eigen::SparseMatrix<double> M;
-    calculator.Compute(M, true);
-    M_.resize(M.cols());
-    for (size_t i = 0; i < M_.rows(); ++i) // mass lump
-        M_.diagonal()[i] = M.row(i).sum();
+    bool lumped = true;
+    calculator.Compute(M_, lumped);
 
+    return 0;
+}
+
+int ReducedSolver::AddElasticEnergy(const double w) {
     const double E = pt_.get<double>("elastic.Young_modulus");
     const double v = pt_.get<double>("elastic.Poisson_ratio");
     const double lambda = E * v / ((1.0 + v) * (1.0 - 2.0 * v));
     const double miu = E / (2.0 * (1.0 + v));
 
-    std::string material = pt_.get<std::string>("elastic.constitutive_model");
+    std::string material = pt_.get<std::string>("elastic.consitutive_model");
     pe_.reset(BuildElasticEnergy(tets_, nods_, lambda, miu, material));
     if ( pe_.get() == nullptr )
         return __LINE__;
     return 0;
 }
 
-int ReducedSolver::BuildU() {
-    // modal analysis: solve the generalized
-    // eigenvalue problem Kx = \lambda Mx
+int ReducedSolver::BuildModalBasis() {
+    Eigen::SparseMatrix<double> K;
+    matrix<double> X = zeros<double>(3, nods_.size(2));
+    if ( pe_.get() )
+        pe_->Hes(&X[0], &K);
+    else
+        return __LINE__;
+
+//    bool flagK = isSymmetric<Eigen::SparseMatrix<double>>(K);
+//    bool flagM = isSymmetric<Eigen::SparseMatrix<double>>(M_);
+//    if ( !(flagK && flagM) ) {
+//        std::cerr << "[INFO] K or M is not symmetric\n";
+//        return __LINE__;
+//    }
+//    const size_t nbr = pt_.get<size_t>("elastic.basis_number");
+//    cout << "[INFO] number of modal basis is " << nbr << "\n";
+//    basis_builder_.reset(new ModalAnalyzer(K, M_, nbr));
+//    basis_builder_->Compute();
+//    U_ = basis_builder_->get_modes();
+//    freq_ = basis_builder_->get_freqs();
 
     return 0;
 }

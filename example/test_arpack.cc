@@ -34,21 +34,21 @@ int main(int argc, char *argv[])
 #else
 int main(int argc, char *argv[])
 {
-    Matrix4d A;
-    A.setRandom();
-    SparseMatrix<double> B = A.sparseView();
-    cout << B << endl << endl;
+//    Matrix4d A;
+//    A.setRandom();
+//    SparseMatrix<double> B = A.sparseView();
+//    cout << B << endl << endl;
 
-    std::unordered_set<size_t> idx;
-    idx.insert(1);
-    idx.insert(2);
-    idx.insert(3);
+//    std::unordered_set<size_t> idx;
+//    idx.insert(1);
+//    idx.insert(2);
+//    idx.insert(3);
 
-    matrix<size_t> l2g;
-    cj::elastic::RemoveRowCol(idx, B, l2g);
+//    matrix<size_t> l2g;
+//    cj::elastic::RemoveRowCol(idx, B, l2g);
 
-    cout << B << endl << endl;
-    cout << "done\n" << endl;
+//    cout << B << endl << endl;
+//    cout << "done\n" << endl;
     return 0;
 }
 #endif

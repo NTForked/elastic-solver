@@ -10,5 +10,7 @@ add_custom_command(OUTPUT constitutive.f90
    DEPENDS constitutive.mac)
 
 add_library(elastic SHARED ${header} ${source} constitutive.f90)
-
+target_link_libraries(elastic
+${ARPACK_LIBRARIES}
+)
 # install the libraries
