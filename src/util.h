@@ -10,10 +10,10 @@ namespace cj { namespace elastic {
 template <typename T>
 int RemoveSparseRowCol(Eigen::SparseMatrix<T> &A,
                        const std::vector<size_t> g2l) {
-    size_t size = 0;
+    size_t n = 0;
     for (size_t i = 0; i < g2l.size(); ++i) {
-        if ( g2l[i] == -1 )
-            ++size;
+        if ( g2l[i] != -1 )
+            ++n;
     }
     std::vector<Eigen::Triplet<T>> trips;
     for (size_t j = 0; j < A.cols(); ++j) {
@@ -22,7 +22,7 @@ int RemoveSparseRowCol(Eigen::SparseMatrix<T> &A,
                 trips.push_back(Eigen::Triplet<T>(g2l[it.row()], g2l[it.col()], it.value()));
         }
     }
-    A.resize(size, size);
+    A.resize(n, n);
     A.reserve(trips.size());
     A.setFromTriplets(trips.begin(), trips.end());
     return 0;
@@ -31,22 +31,11 @@ int RemoveSparseRowCol(Eigen::SparseMatrix<T> &A,
 template <class Mat>
 bool isSymmetric(const Mat &A) {
     Mat AT = A.transpose();
-    if ( (AT - A).squaredNorm() < 1e-20 ) {
+    if ( (AT - A).squaredNorm() < 1e-10 ) {
         return true;
     }
     return false;
 }
-
-/// Generalized eigenvalue solver for
-/// vibration modes: Kx = \lambda Mx
-int SolveModalBasis(const Eigen::SparseMatrix<double> &K,
-                    const Eigen::DiagonalMatrix<double, -1> &M,
-                    const std::unordered_set<size_t> &fix,
-                    const size_t nr,
-                    Eigen::MatrixXd &U,
-                    Eigen::VectorXd &lambda);
-
-int SolveMassPCA();
 
 }}
 #endif
