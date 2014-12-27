@@ -19,6 +19,7 @@ public:
 private :
     const Eigen::SparseMatrix<double> &K_, &M_;
     const size_t nbr_;
+    Eigen::DiagonalMatrix<double, -1> invL_;
     Eigen::MatrixXd modes_;
     Eigen::VectorXd freqs_;
 };

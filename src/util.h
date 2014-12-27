@@ -3,7 +3,6 @@
 
 #include <unordered_set>
 #include <Eigen/Sparse>
-#include <zjucad/matrix/matrix.h>
 
 namespace cj { namespace elastic {
 

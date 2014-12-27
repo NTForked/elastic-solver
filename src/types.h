@@ -7,7 +7,8 @@ enum class MaterialType {
     LINEAR,
     STVK,
     COROTATED,
-    NEOHOOKEAN
+    NEOHOOKEAN,
+    FUNG
 };
 
 }}

@@ -37,6 +37,10 @@ public :
                 std::cerr << "[INFO] degenerated tet.\n";
             }
         }
+        // set lambda1 and miu1 for Fung model  //
+        //                                      //
+        //                                      //
+        //////////////////////////////////////////
     }
 
     ~MaterialEnergy() { }
@@ -65,6 +69,10 @@ public :
                 }
                 case MaterialType::NEOHOOKEAN : {
                     neohookean_tet_(&v, &tet_nods[0], &Dm_[i][0], &volume_[i], &lambda_, &miu_);
+                    break;
+                }
+                case MaterialType::FUNG : {
+                    fung_tet_(&v, &tet_nods[0], &Dm_[i][0], &volume_[i], &lambda_, &miu_, &lambda1_, &miu1_, &c_);
                     break;
                 }
             }
@@ -96,6 +104,10 @@ public :
                 }
                 case MaterialType::NEOHOOKEAN : {
                     neohookean_tet_jac_(&g_[0], &tet_nods[0], &Dm_[i][0], &volume_[i], &lambda_, &miu_);
+                    break;
+                }
+                case MaterialType::FUNG : {
+                    fung_tet_jac_(&g_[0], &tet_nods[0], &Dm_[i][0], &volume_[i], &lambda_, &miu_, &lambda1_, &miu1_, &c_);
                     break;
                 }
             }
@@ -131,6 +143,10 @@ public :
                     neohookean_tet_hes_(&H[0], &tet_nods[0], &Dm_[i][0], &volume_[i], &lambda_, &miu_);
                     break;
                 }
+                case MaterialType::FUNG : {
+                    fung_tet_hes_(&H[0], &tet_nods[0], &Dm_[i][0], &volume_[i], &lambda_, &miu_, &lambda1_, &miu1_, &c_);
+                    break;
+                }
             }
 #pragma omp critical
             for (size_t p = 0; p < 12; ++p) {
@@ -157,6 +173,9 @@ private :
     const double w_;
     zjucad::matrix::matrix<zjucad::matrix::matrix<double>> Dm_;
     zjucad::matrix::matrix<double> volume_;
+    double lambda1_;
+    double miu1_;
+    double c_;
 };
 
 Energy* BuildElasticEnergy(const matrix<size_t> &tets,
@@ -170,6 +189,7 @@ Energy* BuildElasticEnergy(const matrix<size_t> &tets,
     option["stvk"]       = MaterialType::STVK;
     option["corotated"]  = MaterialType::COROTATED;
     option["neohookean"] = MaterialType::NEOHOOKEAN;
+    option["fung"]       = MaterialType::FUNG;
 
     auto it = option.find(type);
     if ( it != option.end() ) {

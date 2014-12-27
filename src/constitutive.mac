@@ -7,12 +7,15 @@ optimprefix : tt$
 f : openw("constitutive.f90")$
 
 block(
-  [X, D, volume, lam, miu],
+  [X, D, volume, lam, miu, lam1, miu1, c],
   X : genmatrix(X, 3, 4),
   D : genmatrix(D, 3, 3),
   volume : genmatrix(volume, 1, 1),
   lam : genmatrix(lam, 1, 1),
   miu : genmatrix(miu, 1, 1),
+  lam1 : genmatrix(lam1, 1, 1),
+  miu1 : genmatrix(miu1, 1, 1),
+  c : genmatrix(c, 1, 1),
   
   /* stvk elastic constitutive model */
   stvk_tet(X, D, volume, lam, miu) := block(
@@ -50,6 +53,12 @@ block(
   volume * ( 0.5  * miu *  ( I1 - log(I3) - 3 ) + 0.125 * lam * log(I3)^2 )
   ),
   with_stdout(f, val_jac_hes_to_f90(neohookean_tet, [X, D, volume, lam, miu])),
+  
+  /* fung hyperelastic material */
+  fung_tet(X, D, volume, lam, miu, lam1, miu1, c) := block(
+  0.5 * (stvk_tet(X, D, volume, lam, miu) + c * (exp(stvk_tet(X, D, volume, lam1, miu1)[1, 1]) - 1))
+  ),
+  with_stdout(f, val_jac_hes_to_f90(fung_tet, [X, D, volume, lam, miu, lam1, miu1, c])),
   
   return()
 )$
