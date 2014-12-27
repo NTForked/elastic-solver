@@ -5,6 +5,7 @@
 #include <zjucad/matrix/matrix.h>
 #include <Eigen/Eigen>
 #include <Eigen/Sparse>
+#include <unordered_set>
 
 namespace cj { namespace elastic {
 
@@ -55,7 +56,7 @@ public :
                   boost::property_tree::ptree &pt);
     int Init();
     int AddElasticEnergy(const double w);
-    int BuildModalBasis();
+    int BuildModalBasis(const std::unordered_set<size_t> &fix);
     void VisualizeVibrationModes();
 public :
     ///< geometry
@@ -76,7 +77,7 @@ public :
     ///< Reduced base
     std::shared_ptr<ModalAnalyzer> basis_builder_;
     Eigen::MatrixXd U_;
-    Eigen::VectorXd freq_;
+    Eigen::VectorXd lambda_;
 
 };
 

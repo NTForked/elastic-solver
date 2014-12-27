@@ -30,7 +30,7 @@ int RemoveSparseRowCol(Eigen::SparseMatrix<T> &A,
 template <class Mat>
 bool isSymmetric(const Mat &A) {
     Mat AT = A.transpose();
-    if ( (AT - A).squaredNorm() < 1e-10 ) {
+    if ( (AT - A).squaredNorm() < 1e-20 ) {
         return true;
     }
     return false;

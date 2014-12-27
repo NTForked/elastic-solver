@@ -17,6 +17,12 @@ if(EIGEN3_FOUND)
     include_directories(${EIGEN3_INCLUDE_DIR})
 endif(EIGEN3_FOUND)
 
+# BOOST
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+find_package(Boost COMPONENTS filesystem system REQUIRED)
+
 #BLAS and LAPACK
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
@@ -27,12 +33,8 @@ if(UMFPACK_FOUND)
     include_directories(${UMFPACK_INCLUDES})
 endif(UMFPACK_FOUND)
 
-# Arpack && Arpack++
+# ARPACK
 find_package(Arpack REQUIRED)
-#find_package(Arpack++ REQUIRED)
-#if(Arpack++_FOUND)
-#    include_directories(${ARPACK++_INCLUDE_DIR})
-#endif(Arpack++_FOUND)
 
 add_subdirectory(src)
 add_subdirectory(example)

@@ -215,7 +215,7 @@ int ReducedSolver::AddElasticEnergy(const double w) {
     return 0;
 }
 
-int ReducedSolver::BuildModalBasis() {
+int ReducedSolver::BuildModalBasis(const std::unordered_set<size_t> &fix) {
     Eigen::SparseMatrix<double> K;
     matrix<double> X = zeros<double>(3, nods_.size(2));
     if ( pe_.get() )
@@ -223,18 +223,18 @@ int ReducedSolver::BuildModalBasis() {
     else
         return __LINE__;
 
-//    bool flagK = isSymmetric<Eigen::SparseMatrix<double>>(K);
-//    bool flagM = isSymmetric<Eigen::SparseMatrix<double>>(M_);
-//    if ( !(flagK && flagM) ) {
-//        std::cerr << "[INFO] K or M is not symmetric\n";
-//        return __LINE__;
-//    }
-//    const size_t nbr = pt_.get<size_t>("elastic.basis_number");
-//    cout << "[INFO] number of modal basis is " << nbr << "\n";
-//    basis_builder_.reset(new ModalAnalyzer(K, M_, nbr));
-//    basis_builder_->Compute();
-//    U_ = basis_builder_->get_modes();
-//    freq_ = basis_builder_->get_freqs();
+    bool flagK = isSymmetric<Eigen::SparseMatrix<double>>(K);
+    bool flagM = isSymmetric<Eigen::SparseMatrix<double>>(M_);
+    if ( !(flagK && flagM) ) {
+        std::cerr << "[INFO] K or M is not symmetric\n";
+        return __LINE__;
+    }
+    const size_t nbr = pt_.get<size_t>("elastic.basis_number");
+    cout << "[INFO] number of modal basis is " << nbr << "\n";
+    basis_builder_.reset(new ModalAnalyzer(K, M_, nbr, fix));
+    basis_builder_->Compute();
+    U_ = basis_builder_->get_modes();
+    lambda_ = basis_builder_->get_freqs();
 
     return 0;
 }

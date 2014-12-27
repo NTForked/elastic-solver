@@ -45,6 +45,7 @@ elastic
 jtf-mesh
 hj-util
 ${UMFPACK_LIBRARIES}
+${Boost_LIBRARIES}
 )
 
 add_executable(test_eigen_solver test_eigen_solver.cc)
