@@ -1,6 +1,7 @@
 #include <iostream>
 #include <Eigen/Sparse>
 #include <Eigen/Eigenvalues>
+#include <zjucad/matrix/matrix.h>
 
 #include "src/arpaca.h"
 #include "src/util.h"

@@ -37,10 +37,13 @@ public :
                 std::cerr << "[INFO] degenerated tet.\n";
             }
         }
-        // set lambda1 and miu1 for Fung model  //
-        //                                      //
-        //                                      //
-        //////////////////////////////////////////
+        //-------set lambda1 and miu1 for Fung model------//
+        const double E = 5 * 1e4;
+        const double v = 0.45;
+        lambda1_ = E * v / ((1.0 + v) * (1.0 - 2.0 * v));
+        miu1_ = E / (2.0 * (1.0 + v));
+        c_ = 10;
+        //------------------------------------------------//
     }
 
     ~MaterialEnergy() { }
@@ -196,7 +199,6 @@ Energy* BuildElasticEnergy(const matrix<size_t> &tets,
         std::cerr << "[INFO] " << type << " elastic model.\n";
         return new MaterialEnergy(tets, nods, lambda, miu, it->second, w);
     } else {
-//        throw std::exception();
         return nullptr;
     }
 }

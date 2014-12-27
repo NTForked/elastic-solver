@@ -4,8 +4,8 @@
 
 #include "src/util.h"
 
-#define CALL_SUB_PROG(prog)          \
-    int prog(ptree &pt);                             \
+#define CALL_SUB_PROG(prog)             \
+    int prog(ptree &pt);                \
     if ( strcmp(argv[1], #prog) == 0 )  \
         return prog(pt);
 
