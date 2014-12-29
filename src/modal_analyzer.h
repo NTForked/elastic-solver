@@ -13,10 +13,10 @@ public:
                   const size_t nbr_basis,
                   const std::unordered_set<size_t> &fix);
     int Compute();
-    Eigen::MatrixXd get_modes();
-    const Eigen::MatrixXd& get_modes() const;
-    Eigen::VectorXd get_freqs();
-    const Eigen::VectorXd& get_freqs() const;
+    Eigen::MatrixXd get_modes() const;
+    Eigen::MatrixXd& get_modes();
+    Eigen::VectorXd get_freqs() const;  // rvalue
+    Eigen::VectorXd& get_freqs();       // lvalue
 private :
     const Eigen::SparseMatrix<double> &K_, &M_;
     const size_t nbr_;

@@ -59,25 +59,26 @@ int ModalAnalyzer::Compute() {
             U.row(i) = modes_.row(flag_[i]);
     }
     modes_ = U;
+    /// here we can check $\psi_i^T*M*\psi_j=\delta_{ij}$
     for (size_t i = 0; i < modes_.cols(); ++i) {
         modes_.col(i) = invL_ * modes_.col(i).eval();
     }
     return 0;
 }
 
-MatrixXd ModalAnalyzer::get_modes() {
+MatrixXd ModalAnalyzer::get_modes() const {
     return modes_;
 }
 
-const MatrixXd& ModalAnalyzer::get_modes() const {
+MatrixXd& ModalAnalyzer::get_modes() {
     return modes_;
 }
 
-VectorXd ModalAnalyzer::get_freqs() {
+VectorXd ModalAnalyzer::get_freqs() const {
     return freqs_;
 }
 
-const VectorXd& ModalAnalyzer::get_freqs() const {
+VectorXd& ModalAnalyzer::get_freqs() {
     return freqs_;
 }
 
