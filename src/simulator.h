@@ -58,10 +58,15 @@ public :
     int AddElasticEnergy(const double w);
     int BuildModalBasis(const std::unordered_set<size_t> &fix);
     void VisualizeVibrationModes();
+
+    // RS warping
+    int BuildRSCoords(const Eigen::VectorXd &u);
 public :
     ///< geometry
     const zjucad::matrix::matrix<size_t> &tets_;
     const zjucad::matrix::matrix<double> &nods_;
+    zjucad::matrix::matrix<double> tetRS_;
+    zjucad::matrix::matrix<double> G_;
 
     ///< energies and constraints
     std::shared_ptr<Energy> pe_;
