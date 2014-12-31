@@ -241,8 +241,16 @@ int ReducedSolver::Prepare() {
     z_.setZero();
     dotz_.resize(nbrBasis_);
     dotz_.setZero();
-    // some preparation for RS warping
-    //
+
+    // some preparation for RS warping**************
+    vols_ = zeros<double>(nods_.size(2), 1);
+    tetRS_.resize(9, tets_.size(2));
+    G_.resize(3, 3 * tets_.size(2));
+#pragma omp parallel for
+    for (size_t i = 0; i < tets_.size(2); ++i) {
+
+    }
+    //**********************************************
     return 0;
 }
 

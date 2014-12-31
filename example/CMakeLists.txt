@@ -54,6 +54,13 @@ elastic
 )
 
 add_executable(test_unit test_unit.cc)
+target_link_libraries(test_unit
+elastic
+hj-util
+${UMFPACK_LIBRARIES}
+${LAPACK_LIBRARIES}
+${Boost_LIBRARIES}
+)
 
 add_executable(test_subspace test_subspace.cc)
 target_link_libraries(test_subspace

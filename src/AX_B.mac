@@ -1,0 +1,20 @@
+load(vect)$
+load(eigen)$
+load(hj_fortran2)$
+
+optimprefix : tt$
+
+f: openw("AX_B.f90")$
+
+block(
+  [X, A, B, w],
+  X: genmatrix(X, 3, 3),
+  A: genmatrix(A, 3, 3),
+  B: genmatrix(B, 3, 3),
+  w: genmatrix(w, 1, 1),
+  axb_energy(X, A, B, w) := w * mat_norm(A . X - B, frobenius)^2,
+  with_stdout(f, val_jac_hes_to_f90(axb_energy, [X, A, B, w])),
+  return()
+)$
+ 
+close(f)$

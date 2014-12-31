@@ -65,6 +65,11 @@ int main(int argc, char *argv[])
         }
     }
 
+    const double f[3] = {0, 0, -5000};
+    for (size_t idx = 66; idx <= 89; ++idx) {
+        sol->SetExternalForce(idx, f);
+    }
+
     matrix<double> curr = nods;
     for (size_t frm = 0; frm < 300; ++frm) {
         cout << "[INFO] frame " << frm << "\n";

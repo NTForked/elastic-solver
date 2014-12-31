@@ -60,6 +60,7 @@ int ModalAnalyzer::Compute() {
     }
     modes_ = U;
     /// here we can check $\psi_i^T*M*\psi_j=\delta_{ij}$
+    /// and $\psi_i^T*K*\psi_j=\lambda_{i}\delta_{ij}$
     for (size_t i = 0; i < modes_.cols(); ++i) {
         modes_.col(i) = invL_ * modes_.col(i).eval();
     }

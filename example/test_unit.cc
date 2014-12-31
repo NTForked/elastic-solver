@@ -4,6 +4,8 @@
 #include <unsupported/Eigen/MatrixFunctions>
 
 #include "src/util.h"
+#include "src/warping_energy.h"
+#include "src/constitutive.h"
 
 #define CALL_SUB_PROG(prog)             \
     int prog(ptree &pt);                \
@@ -53,12 +55,24 @@ int test_matrix_exponential(ptree &pt) {
     return 0;
 }
 
+int test_axb_energy(ptree &pt) {
+    double val = 0;
+    double w = 1;
+    double X[9] = {0, 1, 1, 1, 1, 0, 1, 1, 0};
+    double A[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+    double B[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+    axb_energy_(&val, X, A, B, &w);
+    cout << val << "\n";
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     ptree pt;
     CALL_SUB_PROG(test_inner_iteration);
     CALL_SUB_PROG(test_remove_sparse);
     CALL_SUB_PROG(test_matrix_exponential);
+    CALL_SUB_PROG(test_axb_energy);
     cout << "no sub program.\n";
     return 0;
 }
