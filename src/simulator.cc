@@ -215,6 +215,62 @@ int ReducedSolver::AddElasticEnergy(const double w) {
     return 0;
 }
 
+int ReducedSolver::SetPinnedVertices(const vector<size_t> &idx,
+                                     const matrix<double> &uc) {
+    for (size_t i = 0; i < idx.size(); ++i) {
+        fixed_.insert(3 * idx[i] + 0);
+        fixed_.insert(3 * idx[i] + 1);
+        fixed_.insert(3 * idx[i] + 2);
+    }
+    return 0;
+}
+
+int ReducedSolver::SetExternalForce(const size_t idx, const double *force) {
+    fext_(colon(), idx) = itr_matrix<const double *>(3, 1, force);
+    return 0;
+}
+
+int ReducedSolver::ClearExternalForce() {
+    fext_ = zeros<double>(3, nods_.size(2));
+    return 0;
+}
+
+int ReducedSolver::Prepare() {
+    BuildModalBasis(fixed_);
+    z_.resize(nbrBasis_);
+    z_.setZero();
+    dotz_.resize(nbrBasis_);
+    dotz_.setZero();
+    // some preparation for RS warping
+    //
+    return 0;
+}
+
+int ReducedSolver::Advance() {
+    hj::util::high_resolution_clock clk;
+    double timestart = clk.ms();
+    Map<VectorXd> f(&fext_[0], fext_.size());
+
+#pragma omp parallel for
+    for (size_t i = 0; i < z_.size(); ++i) {
+        dotz_[i] = (dotz_[i] + h_ * (f.transpose() * U_.col(i) - lambda_[i] * z_[i])) /
+                (1.0 + h_ * (beta_ * lambda_[i] + alpha_ + lambda_[i] * h_));
+        z_[i] += h_ * dotz_[i];
+    }
+
+    printf("\ttime cost: %lf\n", clk.ms() - timestart);
+    return 0;
+}
+
+matrix<double>& ReducedSolver::get_disp() {
+    // conventional linear elasticity
+    Map<VectorXd>(&disp_[0], disp_.size()) = U_ * z_;
+
+    // via model warping
+
+    return disp_;
+}
+
 int ReducedSolver::BuildModalBasis(const std::unordered_set<size_t> &fix) {
     Eigen::SparseMatrix<double> K;
     matrix<double> X = zeros<double>(3, nods_.size(2));
@@ -229,9 +285,10 @@ int ReducedSolver::BuildModalBasis(const std::unordered_set<size_t> &fix) {
         std::cerr << "[INFO] K or M is not symmetric\n";
         return __LINE__;
     }
-    const size_t nbr = pt_.get<size_t>("elastic.basis_number");
-    cout << "[INFO] number of modal basis is " << nbr << "\n";
-    basis_builder_.reset(new ModalAnalyzer(K, M_, nbr, fix));
+
+    nbrBasis_ = pt_.get<size_t>("elastic.basis_number");
+    cout << "[INFO] number of modal basis is " << nbrBasis_ << "\n";
+    basis_builder_.reset(new ModalAnalyzer(K, M_, nbrBasis_, fix));
     basis_builder_->Compute();
     U_ = basis_builder_->get_modes();
     lambda_ = basis_builder_->get_freqs();

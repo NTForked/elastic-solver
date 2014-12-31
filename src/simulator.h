@@ -56,16 +56,32 @@ public :
                   boost::property_tree::ptree &pt);
     int Init();
     int AddElasticEnergy(const double w);
+    int SetPinnedVertices(const std::vector<size_t> &idx,
+                          const zjucad::matrix::matrix<double> &uc);
+    int SetExternalForce(const size_t idx, const double *force);
+    int ClearExternalForce();
+
+    /// @brief prepare for modal basis and discrete gradient operator
+    /// @return 0 if succeed
+    int Prepare();
+    int Advance();
+    zjucad::matrix::matrix<double>& get_disp(); // directly or warp
+    size_t GetSubspaceDim() const { return nbrBasis_; }
+public :
     int BuildModalBasis(const std::unordered_set<size_t> &fix);
     void VisualizeVibrationModes();
-
     // RS warping
-    int BuildRSCoords(const Eigen::VectorXd &u);
+    int BuildRSCoords(const zjucad::matrix::matrix<double> &u);
+    int RSWarping();
+
 public :
     ///< geometry
     const zjucad::matrix::matrix<size_t> &tets_;
     const zjucad::matrix::matrix<double> &nods_;
-    zjucad::matrix::matrix<double> tetRS_;
+
+    ///< for warping
+    zjucad::matrix::matrix<double> vols_;   // #verts x 1
+    zjucad::matrix::matrix<double> tetRS_;  // 9 x #tets
     zjucad::matrix::matrix<double> G_;
 
     ///< energies and constraints
@@ -80,7 +96,10 @@ public :
     Eigen::SparseMatrix<double> M_;
 
     ///< Reduced base
+    std::unordered_set<size_t> fixed_;
     std::shared_ptr<ModalAnalyzer> basis_builder_;
+    size_t nbrBasis_ = 0;
+    Eigen::VectorXd z_, dotz_;
     Eigen::MatrixXd U_;
     Eigen::VectorXd lambda_;
 

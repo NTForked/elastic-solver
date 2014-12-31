@@ -1,6 +1,7 @@
 #include <iostream>
 #include <unordered_set>
 #include <boost/property_tree/ptree.hpp>
+#include <unsupported/Eigen/MatrixFunctions>
 
 #include "src/util.h"
 
@@ -45,11 +46,19 @@ int test_remove_sparse(ptree &pt)  {
     return 0;
 }
 
+int test_matrix_exponential(ptree &pt) {
+    Matrix3d A(3, 3);
+    A.setIdentity();
+    cout << A.exp() << "\n";
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     ptree pt;
     CALL_SUB_PROG(test_inner_iteration);
     CALL_SUB_PROG(test_remove_sparse);
+    CALL_SUB_PROG(test_matrix_exponential);
     cout << "no sub program.\n";
     return 0;
 }
