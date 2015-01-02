@@ -44,7 +44,7 @@ int WarpingEnergy::Gra(const double *x, double *gra) const {
                 - Matrix3d::Identity();
         matrix<double> g(12);
         axb_energy_jac_(&g[0], &U[0], &G_(0, i), RS.data(), &vol_[i]);
-        for (size_t j = 0; i < 12; ++j) {
+        for (size_t j = 0; j < 12; ++j) {
             gra[3 * tets_(j / 3, i) + j % 3] += g[j];
         }
     }

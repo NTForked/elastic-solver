@@ -52,8 +52,6 @@ int main(int argc, char *argv[])
     }
     sol->Prepare();
 
-    return 0;
-
     bool seeBasis = false;
     if ( seeBasis ) {
         for (size_t i = 0; i < sol->U_.cols(); ++i) {

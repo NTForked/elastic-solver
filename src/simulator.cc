@@ -304,14 +304,10 @@ int ReducedSolver::Advance() {
 }
 
 matrix<double>& ReducedSolver::get_disp() {
-#define RS_WARPING
-#ifndef RS_WARPING
     ///> conventional linear elasticity
     Map<VectorXd>(&disp_[0], disp_.size()) = U_ * z_;
-#else
-    ///> via RS-coordinates warping
+    ///> RS-coordinates warping
     RSWarping();
-#endif
     return disp_;
 }
 
@@ -345,9 +341,9 @@ int ReducedSolver::ComputeRSCoords(const matrix<double> &u) {
     for (size_t i = 0; i < tets_.size(2); ++i) {
         matrix<double> U = u(colon(), tets_(colon(1, 3), i))
                 - u(colon(), tets_(0, i)) * ones<double>(1, 3);
-        matrix<double> F = U * itr_matrix<const double*>(3, 3, &G_(0, i));
-        matrix<double> skew = 0.5 * (F - trans(F));
-        matrix<double> symm = 0.5 * (F + trans(F));
+        matrix<double> DF = U * itr_matrix<const double*>(3, 3, &G_(0, i));
+        matrix<double> skew = 0.5 * (DF - trans(DF));
+        matrix<double> symm = 0.5 * (DF + trans(DF));
         tetRS_(0, i) = skew(1, 0);
         tetRS_(1, i) = skew(2, 0);
         tetRS_(2, i) = skew(2, 1);
@@ -375,9 +371,9 @@ int ReducedSolver::RSWarping() {
         pc_warp_->Val(&disp_[0], cv.data());
     b.head(EDIM) = -gra;
     b.tail(CDIM) = -cv;
-    solver_.solve(b);
+    VectorXd solution = solver_.solve(b);
     assert(solver_.info() == Success);
-    disp_ += itr_matrix<const double*>(3, disp_.size(2), b.data());
+    disp_ += itr_matrix<const double*>(3, disp_.size(2), solution.data());
     return 0;
 }
 
