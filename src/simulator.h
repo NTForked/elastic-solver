@@ -5,6 +5,7 @@
 #include <zjucad/matrix/matrix.h>
 #include <Eigen/Eigen>
 #include <Eigen/Sparse>
+#include <Eigen/UmfPackSupport>
 #include <unordered_set>
 
 namespace cj { namespace elastic {
@@ -71,7 +72,7 @@ public :
     int BuildModalBasis(const std::unordered_set<size_t> &fix);
     void VisualizeVibrationModes();
     // RS warping
-    int BuildRSCoords(const zjucad::matrix::matrix<double> &u);
+    int ComputeRSCoords(const zjucad::matrix::matrix<double> &u);
     int RSWarping();
 
 public :
@@ -80,12 +81,16 @@ public :
     const zjucad::matrix::matrix<double> &nods_;
 
     ///< for warping
-    zjucad::matrix::matrix<double> vols_;   // #verts x 1
+    zjucad::matrix::matrix<double> vols_;   // #tets x 1
     zjucad::matrix::matrix<double> tetRS_;  // 9 x #tets
-    zjucad::matrix::matrix<double> G_;
+    zjucad::matrix::matrix<double> G_;      // 9 x #tets
+    std::shared_ptr<Energy>     pe_warp_;
+    std::shared_ptr<Constraint> pc_warp_;
+    Eigen::UmfPackLU<Eigen::SparseMatrix<double>> solver_;
+    Eigen::SparseMatrix<double> LHS_;
 
     ///< energies and constraints
-    std::shared_ptr<Energy> pe_;
+    std::shared_ptr<Energy>     pe_;
     std::shared_ptr<Constraint> pc_;
 
     ///< physics configuration

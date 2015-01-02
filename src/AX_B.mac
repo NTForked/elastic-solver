@@ -8,11 +8,18 @@ f: openw("AX_B.f90")$
 
 block(
   [X, A, B, w],
-  X: genmatrix(X, 3, 3),
+  X: genmatrix(X, 3, 4),
   A: genmatrix(A, 3, 3),
   B: genmatrix(B, 3, 3),
   w: genmatrix(w, 1, 1),
-  axb_energy(X, A, B, w) := w * mat_norm(A . X - B, frobenius)^2,
+  
+  axb_energy(X, A, B, w) := block(
+  [U],
+  U: addcol(col(X, 2) - col(X, 1),
+	    col(X, 3) - col(X, 1),
+	    col(X, 4) - col(X, 1)),
+  w * mat_norm(U . A - B, frobenius)^2
+  ),
   with_stdout(f, val_jac_hes_to_f90(axb_energy, [X, A, B, w])),
   return()
 )$

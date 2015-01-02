@@ -2,10 +2,12 @@
 #include <unordered_set>
 #include <boost/property_tree/ptree.hpp>
 #include <unsupported/Eigen/MatrixFunctions>
+#include <zjucad/matrix/io.h>
 
 #include "src/util.h"
-#include "src/warping_energy.h"
+#include "src/warping.h"
 #include "src/constitutive.h"
+#include "src/util.h"
 
 #define CALL_SUB_PROG(prog)             \
     int prog(ptree &pt);                \
@@ -15,6 +17,8 @@
 using namespace std;
 using boost::property_tree::ptree;
 using namespace Eigen;
+using namespace cj::elastic;
+using namespace zjucad::matrix;
 
 int test_inner_iteration(ptree &pt) {
     SparseMatrix<double> A(3, 3);
@@ -66,6 +70,23 @@ int test_axb_energy(ptree &pt) {
     return 0;
 }
 
+int test_make_matrix(ptree &pt) {
+    const double arr[] = {100, 1, 2, 3, 4, 5, 6, 7, 8};
+    Matrix3d SH = make_skew_symm<double>(&arr[0]);
+    Matrix3d H = make_symm<double>(&arr[3]);
+    cout << "skew: \n" << SH << "\n";
+    cout << "symm: \n" << H << "\n";
+    return 0;
+}
+
+int test_matrix_lvalue(ptree &pt) {
+    matrix<double> A = rand(5, 1);
+    cout << "origin:\n" << A << "\n";
+    A(colon(3, 4)) += ones<double>(2, 1);
+    cout << "after:\n" << A << "\n";
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     ptree pt;
@@ -73,6 +94,8 @@ int main(int argc, char *argv[])
     CALL_SUB_PROG(test_remove_sparse);
     CALL_SUB_PROG(test_matrix_exponential);
     CALL_SUB_PROG(test_axb_energy);
+    CALL_SUB_PROG(test_make_matrix);
+    CALL_SUB_PROG(test_matrix_lvalue);
     cout << "no sub program.\n";
     return 0;
 }

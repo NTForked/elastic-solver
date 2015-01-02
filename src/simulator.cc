@@ -1,12 +1,15 @@
 #include "simulator.h"
 
 #include <iostream>
-#include <Eigen/UmfPackSupport>
 #include <Eigen/Dense>
 #include <zjucad/matrix/itr_matrix.h>
 #include <zjucad/matrix/io.h>
 #include <hjlib/util/hrclock.h>
+#include <hjlib/math/blas_lapack.h>
+#include <zjucad/matrix/lapack.h>
+
 #include "elastic_energy.h"
+#include "warping.h"
 #include "position_cons.h"
 #include "mass_matrix.h"
 #include "modal_analyzer.h"
@@ -236,21 +239,51 @@ int ReducedSolver::ClearExternalForce() {
 }
 
 int ReducedSolver::Prepare() {
+    // prepare for solving in reduced space
     BuildModalBasis(fixed_);
     z_.resize(nbrBasis_);
     z_.setZero();
     dotz_.resize(nbrBasis_);
     dotz_.setZero();
 
-    // some preparation for RS warping**************
-    vols_ = zeros<double>(nods_.size(2), 1);
+    // prepare for RS coordinates warping
+    vols_ = zeros<double>(tets_.size(2), 1);
     tetRS_.resize(9, tets_.size(2));
-    G_.resize(3, 3 * tets_.size(2));
+    G_.resize(9, tets_.size(2));
 #pragma omp parallel for
     for (size_t i = 0; i < tets_.size(2); ++i) {
-
+        matrix<double> V = nods_(colon(), tets_(colon(), i));
+        matrix<double> G = V(colon(), colon(1, 3)) - V(colon(), 0) * ones<double>(1, 3);
+        matrix<double> Gbkp = G;
+        vols_[i] = fabs(det(Gbkp)) / 6.0;
+        if ( inv(G) ) {
+            cerr << "[INFO] degenerated tet\n";
+        }
+        G_(colon(), i) = itr_matrix<const double*>(9, 1, &G[0]);
     }
-    //**********************************************
+    pe_warp_.reset(new WarpingEnergy(tets_, nods_, G_, tetRS_, vols_));
+    pc_warp_.reset(new FixMassCenter(tets_, nods_, vols_));
+    SparseMatrix<double> H, J;
+    pe_warp_->Hes(nullptr, &H);
+    pc_warp_->Jac(nullptr, &J);
+    vector<Triplet<double>> trips;
+    for (size_t j = 0; j < H.cols(); ++j)
+        for (SparseMatrix<double>::InnerIterator it(H, j); it; ++it)
+            trips.push_back(Triplet<double>(it.row(), it.col(), it.value()));
+    for (size_t j = 0; j < J.cols(); ++j) {
+        for (SparseMatrix<double>::InnerIterator it(J, j); it; ++it) {
+            trips.push_back(Triplet<double>(pe_warp_->Nx() + it.row(), it.col(), it.value()));
+            trips.push_back(Triplet<double>(it.col(), pe_warp_->Nx() + it.row(), it.value()));
+        }
+    }
+    const size_t DIM = pe_warp_->Nx() + pc_warp_->Nf();
+    LHS_.resize(DIM, DIM);
+    LHS_.reserve(trips.size());
+    LHS_.setFromTriplets(trips.begin(), trips.end());
+    solver_.compute(LHS_);
+    assert(solver_.info() == Success);
+
+    printf("[INFO] preparation done\n");
     return 0;
 }
 
@@ -271,11 +304,14 @@ int ReducedSolver::Advance() {
 }
 
 matrix<double>& ReducedSolver::get_disp() {
-    // conventional linear elasticity
+#define RS_WARPING
+#ifndef RS_WARPING
+    ///> conventional linear elasticity
     Map<VectorXd>(&disp_[0], disp_.size()) = U_ * z_;
-
-    // via model warping
-
+#else
+    ///> via RS-coordinates warping
+    RSWarping();
+#endif
     return disp_;
 }
 
@@ -301,6 +337,47 @@ int ReducedSolver::BuildModalBasis(const std::unordered_set<size_t> &fix) {
     U_ = basis_builder_->get_modes();
     lambda_ = basis_builder_->get_freqs();
 
+    return 0;
+}
+
+int ReducedSolver::ComputeRSCoords(const matrix<double> &u) {
+#pragma omp parallel for
+    for (size_t i = 0; i < tets_.size(2); ++i) {
+        matrix<double> U = u(colon(), tets_(colon(1, 3), i))
+                - u(colon(), tets_(0, i)) * ones<double>(1, 3);
+        matrix<double> F = U * itr_matrix<const double*>(3, 3, &G_(0, i));
+        matrix<double> skew = 0.5 * (F - trans(F));
+        matrix<double> symm = 0.5 * (F + trans(F));
+        tetRS_(0, i) = skew(1, 0);
+        tetRS_(1, i) = skew(2, 0);
+        tetRS_(2, i) = skew(2, 1);
+        tetRS_(3, i) = symm(0, 0);
+        tetRS_(4, i) = symm(1, 0);
+        tetRS_(5, i) = symm(2, 0);
+        tetRS_(6, i) = symm(1, 1);
+        tetRS_(7, i) = symm(2, 1);
+        tetRS_(8, i) = symm(2, 2);
+    }
+    return 0;
+}
+
+int ReducedSolver::RSWarping() {
+    ComputeRSCoords(disp_);
+    const size_t EDIM = pe_warp_->Nx();
+    const size_t CDIM = pc_warp_->Nf();
+    VectorXd b(EDIM + CDIM);
+    VectorXd gra(EDIM), cv(CDIM);
+    gra.setZero();
+    cv.setZero();
+    if ( pe_warp_.get() )
+        pe_warp_->Gra(&disp_[0], gra.data());
+    if ( pc_warp_.get() )
+        pc_warp_->Val(&disp_[0], cv.data());
+    b.head(EDIM) = -gra;
+    b.tail(CDIM) = -cv;
+    solver_.solve(b);
+    assert(solver_.info() == Success);
+    disp_ += itr_matrix<const double*>(3, disp_.size(2), b.data());
     return 0;
 }
 

@@ -1,6 +1,7 @@
 build/
 result/
 lib/
+*.user.*
 *.user
 *~
 *.autosave

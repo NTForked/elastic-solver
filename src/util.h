@@ -36,5 +36,33 @@ bool isSymmetric(const Mat &A) {
     return false;
 }
 
+template <typename T>
+Eigen::Matrix<T, 3, 3> make_skew_symm(const T *element) {
+    Eigen::Matrix<T, 3, 3> mat;
+    mat.setZero();
+    mat(1, 0) = element[0];
+    mat(0, 1) = -element[0];
+    mat(2, 0) = element[1];
+    mat(0, 2) = -element[1];
+    mat(2, 1) = element[2];
+    mat(1, 2) = -element[2];
+    return mat;
+}
+
+template <typename T>
+Eigen::Matrix<T, 3, 3> make_symm(const T *element) {
+    Eigen::Matrix<T, 3, 3> mat;
+    mat(0, 0) = element[0];
+    mat(1, 0) = element[1];
+    mat(2, 0) = element[2];
+    mat(0, 1) = mat(1, 0);
+    mat(1, 1) = element[3];
+    mat(2, 1) = element[4];
+    mat(0, 2) = mat(2, 0);
+    mat(1, 2) = mat(2, 1);
+    mat(2, 2) = element[5];
+    return mat;
+}
+
 }}
 #endif
