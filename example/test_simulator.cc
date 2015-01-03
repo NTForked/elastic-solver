@@ -29,22 +29,21 @@ int main(int argc, char *argv[])
     matrix<double> NODS;
     jtf::mesh::tet_mesh_read_from_vtk(pt.get<string>("elastic.model").c_str(), &NODS, &TETS);
 
-    matrix<size_t> tets(4, TETS.size(2) * 2);
-    matrix<double> nods(3, NODS.size(2) * 2);
-    tets(colon(), colon(0, TETS.size(2) - 1)) = TETS;
-    tets(colon(), colon(TETS.size(2), 2 * TETS.size(2) - 1)) = TETS + NODS.size(2) * ones<size_t>(4, TETS.size(2));
+//    matrix<size_t> tets(4, TETS.size(2) * 2);
+//    matrix<double> nods(3, NODS.size(2) * 2);
+//    tets(colon(), colon(0, TETS.size(2) - 1)) = TETS;
+//    tets(colon(), colon(TETS.size(2), 2 * TETS.size(2) - 1)) = TETS + NODS.size(2) * ones<size_t>(4, TETS.size(2));
 
-    nods(colon(), colon(0, NODS.size(2) - 1)) = NODS;
-    nods(colon(), colon(NODS.size(2), 2 * NODS.size(2) - 1)) = NODS + ones<double>(3, NODS.size(2));
-
+//    nods(colon(), colon(0, NODS.size(2) - 1)) = NODS;
+//    nods(colon(), colon(NODS.size(2), 2 * NODS.size(2) - 1)) = NODS + ones<double>(3, NODS.size(2));
+    matrix<size_t> tets = TETS;
+    matrix<double> nods = NODS;
 
     unique_ptr<StVKSimulator> sim(new StVKSimulator(tets, nods, pt));
     {
         // set fixed points
         vector<size_t> cons_nodes;
         for (int id = 0; id <= 20; ++id)
-            cons_nodes.push_back(id);
-        for (int id = 42; id <= 65; ++id)
             cons_nodes.push_back(id);
         matrix<double> uc = zeros<double>(3, nods.size(2));
         sim->SetFixedPoints(cons_nodes, uc);

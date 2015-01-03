@@ -262,7 +262,7 @@ int ReducedSolver::Prepare() {
         G_(colon(), i) = itr_matrix<const double*>(9, 1, &G[0]);
     }
     pe_warp_.reset(new WarpingEnergy(tets_, nods_, G_, tetRS_, vols_));
-    pc_warp_.reset(new FixMassCenter(tets_, nods_, vols_));
+    pc_warp_.reset(new PositionCons(vector<size_t>(1, 0), zeros<double>(3, nods_.size(2))));
     SparseMatrix<double> H, J;
     pe_warp_->Hes(nullptr, &H);
     pc_warp_->Jac(nullptr, &J);
@@ -359,18 +359,15 @@ int ReducedSolver::ComputeRSCoords(const matrix<double> &u) {
 
 int ReducedSolver::RSWarping() {
     ComputeRSCoords(disp_);
-    const size_t EDIM = pe_warp_->Nx();
-    const size_t CDIM = pc_warp_->Nf();
+    static const size_t EDIM = pe_warp_->Nx();
+    static const size_t CDIM = pc_warp_->Nf();
     VectorXd b(EDIM + CDIM);
-    VectorXd gra(EDIM), cv(CDIM);
-    gra.setZero();
-    cv.setZero();
+    b.setZero();
     if ( pe_warp_.get() )
-        pe_warp_->Gra(&disp_[0], gra.data());
+        pe_warp_->Gra(&disp_[0], &b[0]);
     if ( pc_warp_.get() )
-        pc_warp_->Val(&disp_[0], cv.data());
-    b.head(EDIM) = -gra;
-    b.tail(CDIM) = -cv;
+        pc_warp_->Val(&disp_[0], &b[EDIM]);
+    b = -b;
     VectorXd solution = solver_.solve(b);
     assert(solver_.info() == Success);
     disp_ += itr_matrix<const double*>(3, disp_.size(2), solution.data());

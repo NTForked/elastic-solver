@@ -45,8 +45,6 @@ int main(int argc, char *argv[])
         vector<size_t> pin;
         for (size_t id = 0; id <= 20; ++id)
             pin.push_back(id);
-//        for (size_t id = 42; id <= 65; ++id)
-//            pin.push_back(id);
         matrix<double> uc = zeros<double>(3, nods.size(2));
         sol->SetPinnedVertices(pin, uc);
     }
@@ -88,9 +86,8 @@ int main(int argc, char *argv[])
                 sol->SetExternalForce(id, f);
             }
         }
-        if ( frm == 100 ) {
+        if ( frm == 100 )
             sol->ClearExternalForce();
-        }
 
         sol->Advance();
         curr = nods + sol->get_disp();
