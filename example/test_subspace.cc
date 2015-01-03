@@ -63,7 +63,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    const double f[3] = {0, 0, -5000};
+//    const double f[3] = {0, 0, -5000};
+    const double f[3] = {0, -1000, 0};
     for (size_t idx = 66; idx <= 89; ++idx) {
         sol->SetExternalForce(idx, f);
     }
@@ -73,21 +74,21 @@ int main(int argc, char *argv[])
         cout << "[INFO] frame " << frm << "\n";
         draw("./subspace", frm, tets, curr);
 
-        if ( frm < 100 ) {
-            const double force = 2500;
-            matrix<double> dir = curr(colon(), 21) - curr(colon(), 41);
-            dir /= norm(dir);
-            const double f[3] = {force*dir(0, 0), force*dir(1, 0), force*dir(2, 0)};
-            sol->SetExternalForce(21, f);
-            for (int id = 22; id <= 41; ++id) {
-                matrix<double> dir = curr(colon(), id) - curr(colon(), id - 1);
-                dir /= norm(dir);
-                const double f[3] = {force*dir(0, 0), force*dir(1, 0), force*dir(2, 0)};
-                sol->SetExternalForce(id, f);
-            }
-        }
-        if ( frm == 100 )
-            sol->ClearExternalForce();
+//        if ( frm < 100 ) {
+//            const double force = 2500;
+//            matrix<double> dir = curr(colon(), 21) - curr(colon(), 41);
+//            dir /= norm(dir);
+//            const double f[3] = {force*dir(0, 0), force*dir(1, 0), force*dir(2, 0)};
+//            sol->SetExternalForce(21, f);
+//            for (int id = 22; id <= 41; ++id) {
+//                matrix<double> dir = curr(colon(), id) - curr(colon(), id - 1);
+//                dir /= norm(dir);
+//                const double f[3] = {force*dir(0, 0), force*dir(1, 0), force*dir(2, 0)};
+//                sol->SetExternalForce(id, f);
+//            }
+//        }
+//        if ( frm == 100 )
+//            sol->ClearExternalForce();
 
         sol->Advance();
         curr = nods + sol->get_disp();
