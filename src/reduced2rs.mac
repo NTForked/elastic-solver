@@ -1,0 +1,37 @@
+load(vect)$
+load(eigen)$
+load(hj_fortran2)$
+
+optimprefix : tt$
+
+f: openw("reduced2rs.f90")$
+
+block(
+  [U, G],
+  U: genmatrix(U, 3, 4),
+  G: genmatrix(G, 3, 3),
+  
+  disp2rs(U, G) := block(
+  [DU, F, R, S],
+  DU: addcol(col(U, 2) - col(U, 1),
+	     col(U, 3) - col(U, 1),
+	     col(U, 4) - col(U, 1)),
+  F: DU . G,
+  R: 0.5 * (F - transpose(F)),
+  S: 0.5 * (F + transpose(F)),
+  matrix([R[2, 1]],
+	 [R[3, 1]],
+	 [R[3, 2]],
+	 [S[1, 1]],
+	 [S[2, 1]],
+	 [S[3, 1]],
+	 [S[2, 2]],
+	 [S[3, 2]],
+	 [S[3, 3]]
+	)
+  ),
+  with_stdout(f, val_jac_hes_to_f90(disp2rs, [U, G])),
+  return()
+)$
+
+close(f)$

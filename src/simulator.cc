@@ -14,6 +14,7 @@
 #include "mass_matrix.h"
 #include "modal_analyzer.h"
 #include "util.h"
+#include "reduced2rs.h"
 
 using namespace std;
 using namespace Eigen;
@@ -282,6 +283,7 @@ int ReducedSolver::Prepare() {
     LHS_.setFromTriplets(trips.begin(), trips.end());
     solver_.compute(LHS_);
     assert(solver_.info() == Success);
+    reducedtoRS.reset(new ReducedToRS(tets_, nods_, G_, U_));
 
     printf("[INFO] preparation done\n");
     return 0;
@@ -304,10 +306,15 @@ int ReducedSolver::Advance() {
 }
 
 matrix<double>& ReducedSolver::get_disp() {
+#define CONVENTIONAL_LINEAR_ELASTICITY 0
+#if CONVENTIONAL_LINEAR_ELASTICITY
     ///> conventional linear elasticity
     Map<VectorXd>(&disp_[0], disp_.size()) = U_ * z_;
+#else
     ///> RS-coordinates warping
+    ComputeRSCoords(z_);
     RSWarping();
+#endif
     return disp_;
 }
 
@@ -357,8 +364,12 @@ int ReducedSolver::ComputeRSCoords(const matrix<double> &u) {
     return 0;
 }
 
+int ReducedSolver::ComputeRSCoords(const VectorXd &z) {
+    (*reducedtoRS)(z, tetRS_);
+    return 0;
+}
+
 int ReducedSolver::RSWarping() {
-    ComputeRSCoords(disp_);
     static const size_t EDIM = pe_warp_->Nx();
     static const size_t CDIM = pc_warp_->Nf();
     VectorXd b(EDIM + CDIM);

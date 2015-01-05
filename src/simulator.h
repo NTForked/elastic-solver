@@ -13,6 +13,7 @@ namespace cj { namespace elastic {
 class Energy;
 class Constraint;
 class ModalAnalyzer;
+class ReducedToRS;
 
 // displacement based stvk model
 
@@ -73,6 +74,7 @@ public :
     void VisualizeVibrationModes();
     // RS warping
     int ComputeRSCoords(const zjucad::matrix::matrix<double> &u);
+    int ComputeRSCoords(const Eigen::VectorXd &z);
     int RSWarping();
 
 public :
@@ -88,6 +90,7 @@ public :
     std::shared_ptr<Constraint> pc_warp_;
     Eigen::UmfPackLU<Eigen::SparseMatrix<double>> solver_;
     Eigen::SparseMatrix<double> LHS_;
+    std::shared_ptr<ReducedToRS> reducedtoRS;
 
     ///< energies and constraints
     std::shared_ptr<Energy>     pe_;

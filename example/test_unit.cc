@@ -87,6 +87,13 @@ int test_matrix_lvalue(ptree &pt) {
     return 0;
 }
 
+int test_matrix_plus(ptree &pt) {
+    matrix<double> I = identity_matrix<double>(3);
+    I += 0.5;
+    cout << I << "\n";
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     ptree pt;
@@ -96,6 +103,7 @@ int main(int argc, char *argv[])
     CALL_SUB_PROG(test_axb_energy);
     CALL_SUB_PROG(test_make_matrix);
     CALL_SUB_PROG(test_matrix_lvalue);
+    CALL_SUB_PROG(test_matrix_plus);
     cout << "no sub program.\n";
     return 0;
 }
