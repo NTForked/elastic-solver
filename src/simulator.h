@@ -51,11 +51,12 @@ private :
     Eigen::SparseMatrix<double> M_;
 };
 
-class ReducedSolver {
+/// @brief reduced linear elastic solver with post RS-coordinate warping
+class LinearReducedSolver {
 public :
-    ReducedSolver(const zjucad::matrix::matrix<size_t> &tets,
-                  const zjucad::matrix::matrix<double> &nods,
-                  boost::property_tree::ptree &pt);
+    LinearReducedSolver(const zjucad::matrix::matrix<size_t> &tets,
+                        const zjucad::matrix::matrix<double> &nods,
+                        boost::property_tree::ptree &pt);
     int Init();
     int AddElasticEnergy(const double w);
     int SetPinnedVertices(const std::vector<size_t> &idx,
@@ -111,6 +112,32 @@ public :
     Eigen::MatrixXd U_;
     Eigen::VectorXd lambda_;
 
+};
+
+/// @brief reduced Stvk material solver using
+/// modal basis from LMA and modal derivatives
+class StvkReducedSolver {
+public :
+    typedef zjucad::matrix::matrix<size_t> matrixi_t;
+    typedef zjucad::matrix::matrix<double> matrixd_t;
+    StvkReducedSolver(const matrixi_t &tets,
+                      const matrixd_t &nods,
+                      boost::property_tree::ptree &pt);
+private :
+    const matrixi_t &tets_;
+    const matrixd_t &nods_;
+
+    std::shared_ptr<Energy>     pe_;    //< only for stvk
+    std::shared_ptr<Constraint> pc_;
+
+    boost::property_tree::ptree &pt_;
+    double h_, alpha_, beta_;
+    matrixd_t disp_, fext_;
+    Eigen::SparseMatrix<double> M_;
+
+    size_t nbrBasis_ = 0;
+    Eigen::VectorXd z_;
+    Eigen::MatrixXd U_;
 };
 
 }}

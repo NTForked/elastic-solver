@@ -1,6 +1,7 @@
 build/
 result/
 lib/
+script/
 *.user.*
 *.user
 *~

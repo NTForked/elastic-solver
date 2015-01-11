@@ -185,12 +185,12 @@ int StVKSimulator::AssembleRHS(Eigen::VectorXd &rhs) {
 
 //------------------------REDUCED PART-----------------------------------
 
-ReducedSolver::ReducedSolver(const matrix<size_t> &tets,
-                             const matrix<double> &nods,
-                             boost::property_tree::ptree &pt)
+LinearReducedSolver::LinearReducedSolver(const matrix<size_t> &tets,
+                                         const matrix<double> &nods,
+                                         boost::property_tree::ptree &pt)
     : tets_(tets), nods_(nods), pt_(pt) { }
 
-int ReducedSolver::Init() {
+int LinearReducedSolver::Init() {
     h_ = pt_.get<double>("elastic.time_step");
     alpha_ = pt_.get<double>("elastic.alpha");
     beta_ = pt_.get<double>("elastic.beta");
@@ -206,7 +206,7 @@ int ReducedSolver::Init() {
     return 0;
 }
 
-int ReducedSolver::AddElasticEnergy(const double w) {
+int LinearReducedSolver::AddElasticEnergy(const double w) {
     const double E = pt_.get<double>("elastic.Young_modulus");
     const double v = pt_.get<double>("elastic.Poisson_ratio");
     const double lambda = E * v / ((1.0 + v) * (1.0 - 2.0 * v));
@@ -219,8 +219,8 @@ int ReducedSolver::AddElasticEnergy(const double w) {
     return 0;
 }
 
-int ReducedSolver::SetPinnedVertices(const vector<size_t> &idx,
-                                     const matrix<double> &uc) {
+int LinearReducedSolver::SetPinnedVertices(const vector<size_t> &idx,
+                                           const matrix<double> &uc) {
     for (size_t i = 0; i < idx.size(); ++i) {
         fixed_.insert(3 * idx[i] + 0);
         fixed_.insert(3 * idx[i] + 1);
@@ -229,17 +229,17 @@ int ReducedSolver::SetPinnedVertices(const vector<size_t> &idx,
     return 0;
 }
 
-int ReducedSolver::SetExternalForce(const size_t idx, const double *force) {
+int LinearReducedSolver::SetExternalForce(const size_t idx, const double *force) {
     fext_(colon(), idx) = itr_matrix<const double *>(3, 1, force);
     return 0;
 }
 
-int ReducedSolver::ClearExternalForce() {
+int LinearReducedSolver::ClearExternalForce() {
     fext_ = zeros<double>(3, nods_.size(2));
     return 0;
 }
 
-int ReducedSolver::Prepare() {
+int LinearReducedSolver::Prepare() {
     // prepare for solving in reduced space
     BuildModalBasis(fixed_);
     z_.resize(nbrBasis_);
@@ -289,7 +289,12 @@ int ReducedSolver::Prepare() {
     return 0;
 }
 
-int ReducedSolver::Advance() {
+int LinearReducedSolver::Advance() {
+    // just for linear elasticity, reduced stiffness
+    // matrix is constant and simply diagonal
+    // no need to evaluate the cubic reduced force
+    // and quadratic reduced stiffness matrix as
+    // stvk material
     hj::util::high_resolution_clock clk;
     double timestart = clk.ms();
     Map<VectorXd> f(&fext_[0], fext_.size());
@@ -305,7 +310,7 @@ int ReducedSolver::Advance() {
     return 0;
 }
 
-matrix<double>& ReducedSolver::get_disp() {
+matrix<double>& LinearReducedSolver::get_disp() {
 #define CONVENTIONAL_LINEAR_ELASTICITY 0
 #if CONVENTIONAL_LINEAR_ELASTICITY
     ///> conventional linear elasticity
@@ -318,7 +323,7 @@ matrix<double>& ReducedSolver::get_disp() {
     return disp_;
 }
 
-int ReducedSolver::BuildModalBasis(const std::unordered_set<size_t> &fix) {
+int LinearReducedSolver::BuildModalBasis(const std::unordered_set<size_t> &fix) {
     Eigen::SparseMatrix<double> K;
     matrix<double> X = zeros<double>(3, nods_.size(2));
     if ( pe_.get() )
@@ -343,7 +348,7 @@ int ReducedSolver::BuildModalBasis(const std::unordered_set<size_t> &fix) {
     return 0;
 }
 
-int ReducedSolver::ComputeRSCoords(const matrix<double> &u) {
+int LinearReducedSolver::ComputeRSCoords(const matrix<double> &u) {
 #pragma omp parallel for
     for (size_t i = 0; i < tets_.size(2); ++i) {
         matrix<double> U = u(colon(), tets_(colon(1, 3), i))
@@ -364,12 +369,12 @@ int ReducedSolver::ComputeRSCoords(const matrix<double> &u) {
     return 0;
 }
 
-int ReducedSolver::ComputeRSCoords(const VectorXd &z) {
+int LinearReducedSolver::ComputeRSCoords(const VectorXd &z) {
     (*reducedtoRS)(z, tetRS_);
     return 0;
 }
 
-int ReducedSolver::RSWarping() {
+int LinearReducedSolver::RSWarping() {
     static const size_t EDIM = pe_warp_->Nx();
     static const size_t CDIM = pc_warp_->Nf();
     VectorXd b(EDIM + CDIM);

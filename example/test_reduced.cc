@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
         tet2vtk(os, &nods[0], nods.size(2), &tets[0], tets.size(2));
     }
 
-    shared_ptr<ReducedSolver> sol(new ReducedSolver(tets, nods, pt));
+    shared_ptr<LinearReducedSolver> sol(new LinearReducedSolver(tets, nods, pt));
     sol->Init();
     sol->AddElasticEnergy(1.0);
     std::unordered_set<size_t> fix;

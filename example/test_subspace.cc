@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 
     boost::filesystem::create_directory("./subspace");
 
-    shared_ptr<ReducedSolver> sol(new ReducedSolver(tets, nods, pt));
+    shared_ptr<LinearReducedSolver> sol(new LinearReducedSolver(tets, nods, pt));
     sol->Init();
     sol->AddElasticEnergy(1.0);
     {
