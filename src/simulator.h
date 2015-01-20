@@ -52,6 +52,7 @@ private :
 };
 
 /// @brief reduced linear elastic solver with post RS-coordinate warping
+///        we can get analytic solution here
 class LinearReducedSolver {
 public :
     LinearReducedSolver(const zjucad::matrix::matrix<size_t> &tets,
@@ -75,6 +76,9 @@ public :
     void VisualizeVibrationModes();
     // RS warping
     int ComputeRSCoords(const zjucad::matrix::matrix<double> &u);
+    // y = QWz, reveal the linear relationship between RS coordinates
+    // and reduced coordinates, then y->Euclidean coordinates
+    // via poisson construction
     int ComputeRSCoords(const Eigen::VectorXd &z);
     int RSWarping();
 
@@ -116,6 +120,7 @@ public :
 
 /// @brief reduced Stvk material solver using
 /// modal basis from LMA and modal derivatives
+/// NO MADAL WARPING
 class StvkReducedSolver {
 public :
     typedef zjucad::matrix::matrix<size_t> matrixi_t;
@@ -123,6 +128,27 @@ public :
     StvkReducedSolver(const matrixi_t &tets,
                       const matrixd_t &nods,
                       boost::property_tree::ptree &pt);
+    int Init();
+    int AddElasticEnergy(const double w);
+
+    int SetPinnedVerts(const std::vector<size_t> &idx, const matrixd_t &uc);
+    int FreePinnedVerts();
+
+    int SetGravity(const double w);
+    int ClearGravity();
+
+    int SetExternalForce(const size_t idx, const double *force);
+    int ClearExternalForce();
+
+    int Prepare();
+    int Advance();
+
+    matrixd_t& get_disp();
+    matrixd_t get_disp() const;
+    size_t get_subspace_dim() const { return nbrBasis_; }
+private :
+    // LMA
+    int BuildModalBasis(const std::unordered_set<size_t> &fix);
 private :
     const matrixi_t &tets_;
     const matrixd_t &nods_;
@@ -132,7 +158,7 @@ private :
 
     boost::property_tree::ptree &pt_;
     double h_, alpha_, beta_;
-    matrixd_t disp_, fext_;
+    matrixd_t disp_, fext_, grav_;
     Eigen::SparseMatrix<double> M_;
 
     size_t nbrBasis_ = 0;

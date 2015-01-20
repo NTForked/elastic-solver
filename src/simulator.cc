@@ -299,6 +299,7 @@ int LinearReducedSolver::Advance() {
     double timestart = clk.ms();
     Map<VectorXd> f(&fext_[0], fext_.size());
 
+    ///> integrate every component separately, implicit euler
 #pragma omp parallel for
     for (size_t i = 0; i < z_.size(); ++i) {
         dotz_[i] = (dotz_[i] + h_ * (f.transpose() * U_.col(i) - lambda_[i] * z_[i])) /

@@ -13,6 +13,7 @@ Energy* BuildElasticEnergy(const zjucad::matrix::matrix<size_t> &tets,
                            const double miu,
                            const std::string &type,
                            const double w = 1);
+
 }}
 
 #endif
