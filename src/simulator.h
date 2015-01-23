@@ -111,7 +111,7 @@ public :
     ///< Reduced base
     std::unordered_set<size_t> fixed_;
     std::shared_ptr<ModalAnalyzer> basis_builder_;
-    size_t nbrBasis_ = 0;
+    size_t nbrBasis_= 0;
     Eigen::VectorXd z_, dotz_;
     Eigen::MatrixXd U_;
     Eigen::VectorXd lambda_;
@@ -120,7 +120,9 @@ public :
 
 /// @brief reduced Stvk material solver using
 /// modal basis from LMA and modal derivatives
-/// NO MADAL WARPING
+/// omit modal warping here
+/// @todo (1) modal derivatives
+/// @todo (2) cubature optimization
 class StvkReducedSolver {
 public :
     typedef zjucad::matrix::matrix<size_t> matrixi_t;
@@ -131,28 +133,29 @@ public :
     int Init();
     int AddElasticEnergy(const double w);
 
-    int SetPinnedVerts(const std::vector<size_t> &idx, const matrixd_t &uc);
-    int FreePinnedVerts();
+    void SetPinnedVerts(const std::vector<size_t> &idx, const matrixd_t &uc);
+    void FreePinnedVerts();
 
-    int SetGravity(const double w);
-    int ClearGravity();
+    void SetGravity(const double w);
+    void ClearGravity();
 
-    int SetExternalForce(const size_t idx, const double *force);
-    int ClearExternalForce();
+    void SetExternalForce(const size_t idx, const double *force);
+    void ClearExternalForce();
 
     int Prepare();
     int Advance();
 
-    matrixd_t& get_disp();
-    matrixd_t get_disp() const;
+    matrixd_t& get_disp(); // lvalue or rvalue
     size_t get_subspace_dim() const { return nbrBasis_; }
 private :
-    // LMA
+    // LMA + modal derivatives
     int BuildModalBasis(const std::unordered_set<size_t> &fix);
-private :
+    int SolveModalDeriv();
+public :
     const matrixi_t &tets_;
     const matrixd_t &nods_;
 
+    ///< elastic energy and positional constraint
     std::shared_ptr<Energy>     pe_;    //< only for stvk
     std::shared_ptr<Constraint> pc_;
 
@@ -161,9 +164,12 @@ private :
     matrixd_t disp_, fext_, grav_;
     Eigen::SparseMatrix<double> M_;
 
-    size_t nbrBasis_ = 0;
-    Eigen::VectorXd z_;
+    std::unordered_set<size_t> fixed_;
+    std::shared_ptr<ModalAnalyzer> basis_builder_;
+    size_t nbrBasis_= 0;
+    Eigen::VectorXd z_, dzdt_;
     Eigen::MatrixXd U_;
+    Eigen::VectorXd lambda_;
 };
 
 }}

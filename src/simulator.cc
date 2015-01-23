@@ -183,7 +183,7 @@ int StVKSimulator::AssembleRHS(Eigen::VectorXd &rhs) {
     return 0;
 }
 
-//------------------------REDUCED PART-----------------------------------
+//------------------------LINEAR REDUCED PART-----------------------------------
 
 LinearReducedSolver::LinearReducedSolver(const matrix<size_t> &tets,
                                          const matrix<double> &nods,
@@ -283,6 +283,8 @@ int LinearReducedSolver::Prepare() {
     LHS_.setFromTriplets(trips.begin(), trips.end());
     solver_.compute(LHS_);
     assert(solver_.info() == Success);
+    // build the linear map between reduced coordinates
+    // and RS coordinates
     reducedtoRS.reset(new ReducedToRS(tets_, nods_, G_, U_));
 
     printf("[INFO] preparation done\n");
@@ -322,6 +324,7 @@ matrix<double>& LinearReducedSolver::get_disp() {
     RSWarping();
 #endif
     return disp_;
+#undef CONVENTIONAL_LINEAR_ELASTICITY
 }
 
 int LinearReducedSolver::BuildModalBasis(const std::unordered_set<size_t> &fix) {
@@ -388,6 +391,116 @@ int LinearReducedSolver::RSWarping() {
     VectorXd solution = solver_.solve(b);
     assert(solver_.info() == Success);
     disp_ += itr_matrix<const double*>(3, disp_.size(2), solution.data());
+    return 0;
+}
+
+//--------------------------STVK REDUCED PART-----------------------------------
+
+StvkReducedSolver::StvkReducedSolver(const matrixi_t &tets,
+                                     const matrixd_t &nods,
+                                     boost::property_tree::ptree &pt)
+    : tets_(tets), nods_(nods), pt_(pt) { }
+
+int StvkReducedSolver::Init() {
+    h_ = pt_.get<double>("elastic.time_step");
+    alpha_ = pt_.get<double>("elastic.alpha");
+    beta_ = pt_.get<double>("elastic.beta");
+    disp_ = zeros<double>(3, nods_.size(2));
+    fext_ = zeros<double>(3, nods_.size(2));
+    grav_ = zeros<double>(3, nods_.size(2));
+
+    double rho = pt_.get<double>("elastic.density");
+    MassMatrix calculator(tets_, nods_, rho);
+    bool lumped = true;
+    calculator.Compute(M_, lumped);
+    return 0;
+}
+
+int StvkReducedSolver::AddElasticEnergy(const double w) {
+    const double E = pt_.get<double>("elastic.Young_modulus");
+    const double v = pt_.get<double>("elastic.Poisson_ratio");
+    const double lambda = E * v / ((1.0 + v) * (1.0 - 2.0 * v));
+    const double miu = E / (2.0 * (1.0 + v));
+    pe_.reset(BuildElasticEnergy(tets_, nods_, lambda, miu, "stvk"));
+    if ( pe_.get() == nullptr )
+        return __LINE__;
+    return 0;
+}
+
+void StvkReducedSolver::SetPinnedVerts(const vector<size_t> &idx, const matrixd_t &uc) {
+    for (size_t i = 0; i < idx.size(); ++i) {
+        fixed_.insert(3 * idx[i] + 0);
+        fixed_.insert(3 * idx[i] + 1);
+        fixed_.insert(3 * idx[i] + 2);
+    }
+}
+
+/// rebuild modal basis???
+void StvkReducedSolver::FreePinnedVerts() {
+    fixed_.clear();
+}
+
+void StvkReducedSolver::SetGravity(const double w) {
+#pragma omp parallel for
+    for (size_t i = 0; i < grav_.size(2); ++i)
+        grav_(1, i) = -9.81 * w * M_.coeff(3 * i, 3 * i);
+    fext_ += grav_;
+}
+
+void StvkReducedSolver::ClearGravity() {
+    fext_ -= grav_;
+}
+
+void StvkReducedSolver::SetExternalForce(const size_t idx, const double *force) {
+    fext_(colon(), idx) = itr_matrix<const double*>(3, 1, force);
+}
+
+void StvkReducedSolver::ClearExternalForce() {
+    fext_ = zeros<double>(fext_.size(1), fext_.size(2));
+}
+
+int StvkReducedSolver::Prepare() {
+    BuildModalBasis(fixed_);
+    z_.resize(nbrBasis_, 1);
+    dzdt_.setZero(nbrBasis_, 1);
+    return 0;
+}
+
+int StvkReducedSolver::Advance() {
+    // subspace integration
+    // reduced equations of motion:
+    // \ddot q + U^TD(Uq, U\dot q) + U^TR(Uq) = U^Tf_{ext}
+    // apply Rayleigh damping
+    // \ddot q + U^T(\alpha M + \beta K(Uq)U\dot q + U^TR(Uq) = U^Tf_{ext}
+
+}
+
+StvkReducedSolver::matrixd_t& StvkReducedSolver::get_disp() {
+    Map<VectorXd>(&disp_[0], disp_.size()) = U_ * z_;
+    return disp_;
+}
+
+int StvkReducedSolver::SolveModalDeriv() {
+
+}
+
+int StvkReducedSolver::BuildModalBasis(const unordered_set<size_t> &fix) {
+    Eigen::SparseMatrix<double> K;
+    matrixd_t u0 = zeros<double>(3, nods_.size(2));
+    if ( pe_.get() )
+        pe_->Hes(&u0[0], &K);
+    else
+        return __LINE__;
+
+    nbrBasis_ = pt_.get<size_t>("elastic.basis_number");
+    basis_builder_.reset(new ModalAnalyzer(K, M_, nbrBasis_, fix));
+    basis_builder_->Compute();
+    U_ = basis_builder_->get_modes();
+    lambda_ = basis_builder_->get_freqs();
+
+    // extend basis through modal derivative
+    //.......
+
     return 0;
 }
 

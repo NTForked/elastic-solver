@@ -72,3 +72,12 @@ ${LAPACK_LIBRARIES}
 ${Boost_LIBRARIES}
 )
 
+add_executable(test_reduced_stvk test_reduced_stvk.cc)
+target_link_libraries(test_reduced_stvk
+elastic
+jtf-mesh
+hj-util
+${UMFPACK_LIBRARIES}
+${LAPACK_LIBRARIES}
+${Boost_LIBRARIES}
+)
