@@ -196,6 +196,7 @@ int LinearReducedSolver::Init() {
     beta_ = pt_.get<double>("elastic.beta");
     disp_ = zeros<double>(3, nods_.size(2));
     fext_ = zeros<double>(3, nods_.size(2));
+    grav_ = zeros<double>(3, nods_.size(2));
 
     // set mass matrix, here we want an lumped matrix;
     double dens = pt_.get<double>("elastic.density");
@@ -236,6 +237,19 @@ int LinearReducedSolver::SetExternalForce(const size_t idx, const double *force)
 
 int LinearReducedSolver::ClearExternalForce() {
     fext_ = zeros<double>(3, nods_.size(2));
+    return 0;
+}
+
+int LinearReducedSolver::SetGravity(const double w) {
+#pragma omp parallel for
+    for (size_t i = 0; i < grav_.size(2); ++i)
+        grav_(1, i) = -9.81 * w * M_.coeff(3 * i, 3 * i);
+    fext_ += grav_;
+    return 0;
+}
+
+int LinearReducedSolver::ClearGravity() {
+    fext_ -= grav_;
     return 0;
 }
 
@@ -472,6 +486,10 @@ int StvkReducedSolver::Advance() {
     // \ddot q + U^TD(Uq, U\dot q) + U^TR(Uq) = U^Tf_{ext}
     // apply Rayleigh damping
     // \ddot q + U^T(\alpha M + \beta K(Uq)U\dot q + U^TR(Uq) = U^Tf_{ext}
+    // U^TR(Uq) is a cubic polynomial and the reduced tangent stiffness
+    // matrix U^TK(Uq)U is a quadratic polynomail thus their coefficients
+    // can be precomputed
+
 
 }
 

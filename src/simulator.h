@@ -64,6 +64,8 @@ public :
                           const zjucad::matrix::matrix<double> &uc);
     int SetExternalForce(const size_t idx, const double *force);
     int ClearExternalForce();
+    int SetGravity(const double w);
+    int ClearGravity();
 
     /// @brief prepare for modal basis and discrete gradient operator
     /// @return 0 if succeed
@@ -106,6 +108,7 @@ public :
     double h_, alpha_, beta_;
     zjucad::matrix::matrix<double> disp_;
     zjucad::matrix::matrix<double> fext_;
+    zjucad::matrix::matrix<double> grav_;
     Eigen::SparseMatrix<double> M_;
 
     ///< Reduced base

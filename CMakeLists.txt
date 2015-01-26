@@ -11,7 +11,7 @@ link_geo_sim_sdk()
 include_directories(${CMAKE_SOURCE_DIR})
 link_directories(${LIBRARY_OUTPUT_PATH})
 
-#EIGEN3
+# EIGEN3
 find_package(Eigen3 REQUIRED)
 if(EIGEN3_FOUND)
     include_directories(${EIGEN3_INCLUDE_DIR})
@@ -23,7 +23,7 @@ set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost COMPONENTS filesystem system REQUIRED)
 
-#BLAS and LAPACK
+# BLAS and LAPACK
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
@@ -35,6 +35,14 @@ endif(UMFPACK_FOUND)
 
 # ARPACK
 find_package(Arpack REQUIRED)
+
+# OPENCL
+find_package(OpenCL REQUIRED)
+if(OPENCL_FOUND)
+    include_directories(${OPENCL_INCLUDE_DIRS})
+endif(OPENCL_FOUND)
+add_definitions(-DVIENNACL_WITH_OPENCL)
+add_definitions(-DVIENNACL_HAVE_EIGEN)
 
 add_subdirectory(src)
 add_subdirectory(example)

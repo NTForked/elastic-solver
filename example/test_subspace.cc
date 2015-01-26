@@ -48,6 +48,7 @@ int main(int argc, char *argv[])
         matrix<double> uc = zeros<double>(3, nods.size(2));
         sol->SetPinnedVertices(pin, uc);
     }
+    sol->SetGravity(10.0);
     sol->Prepare();
 
     bool seeBasis = false;
@@ -64,10 +65,10 @@ int main(int argc, char *argv[])
     }
 
 //    const double f[3] = {0, 0, -5000};
-    const double f[3] = {0, -1000, 0};
-    for (size_t idx = 66; idx <= 89; ++idx) {
-        sol->SetExternalForce(idx, f);
-    }
+//    const double f[3] = {0, -1000, 0};
+//    for (size_t idx = 66; idx <= 89; ++idx) {
+//        sol->SetExternalForce(idx, f);
+//    }
 
     matrix<double> curr = nods;
     for (size_t frm = 0; frm < 300; ++frm) {
