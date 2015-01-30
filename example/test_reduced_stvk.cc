@@ -48,10 +48,10 @@ int main(int argc, char *argv[])
         matrix<double> uc = zeros<double>(3, nods.size(2));
         sol->SetPinnedVerts(pin, uc);
     }
-    sol->SetGravity(1.0);
+    sol->SetGravity(10.0);
     sol->Prepare();
 
-    bool seeBasis = false;
+    bool seeBasis = true;
     if ( seeBasis ) {
         for (size_t i = 0; i < sol->U_.cols(); ++i) {
             VectorXd u = sol->U_.col(i);

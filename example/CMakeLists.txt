@@ -82,7 +82,9 @@ ${LAPACK_LIBRARIES}
 ${Boost_LIBRARIES}
 )
 
-add_executable(test_cl test_cl.cc)
-target_link_libraries(test_cl
-${OPENCL_LIBRARIES}
-)
+if(OPENCL_FOUND)
+    add_executable(test_cl test_cl.cc)
+    target_link_libraries(test_cl
+    ${OPENCL_LIBRARIES}
+    )
+endif(OPENCL_FOUND)

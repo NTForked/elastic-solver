@@ -154,6 +154,9 @@ private :
     // LMA + modal derivatives
     int BuildModalBasis(const std::unordered_set<size_t> &fix);
     int SolveModalDeriv();
+    // eval cubic and quadractic polynomials
+    void EvalReducedForce(const Eigen::VectorXd &q, Eigen::VectorXd *rf);
+    void EvalReducedStiffnessMat(const Eigen::VectorXd &q, Eigen::MatrixXd *rK);
 public :
     const matrixi_t &tets_;
     const matrixd_t &nods_;

@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <Eigen/Dense>
+#include <Eigen/LU>
 #include <zjucad/matrix/itr_matrix.h>
 #include <zjucad/matrix/io.h>
 #include <hjlib/util/hrclock.h>
@@ -475,9 +476,32 @@ void StvkReducedSolver::ClearExternalForce() {
 
 int StvkReducedSolver::Prepare() {
     BuildModalBasis(fixed_);
-    z_.resize(nbrBasis_, 1);
+    z_.setZero(nbrBasis_, 1);
     dzdt_.setZero(nbrBasis_, 1);
     return 0;
+}
+
+void StvkReducedSolver::EvalReducedForce(const VectorXd &q, VectorXd *rf) {
+    VectorXd u = U_ * q;
+    VectorXd f;
+    f.setZero(u.rows(), u.cols());
+    pe_->Gra(u.data(), f.data());
+    if ( rf ) {
+        rf->resize(get_subspace_dim());
+        *rf = U_.transpose() * f;
+    }
+    // notice that each component of rf is a cubic polynomial of q,
+    // so the coeffecients can be precomputed for fast evaluation
+}
+
+void StvkReducedSolver::EvalReducedStiffnessMat(const VectorXd &q, MatrixXd *rK) {
+    VectorXd u = U_ * q;
+    SparseMatrix<double> K;
+    pe_->Hes(u.data(), &K);
+    if ( rK ) {
+        rK->resize(get_subspace_dim(), get_subspace_dim());
+        *rK = U_.transpose() * K * U_;
+    }
 }
 
 int StvkReducedSolver::Advance() {
@@ -489,8 +513,29 @@ int StvkReducedSolver::Advance() {
     // U^TR(Uq) is a cubic polynomial and the reduced tangent stiffness
     // matrix U^TK(Uq)U is a quadratic polynomail thus their coefficients
     // can be precomputed
+    const size_t rdim = get_subspace_dim();
+    VectorXd rf;
+    MatrixXd rK;
+    EvalReducedForce(z_, &rf);
+    EvalReducedStiffnessMat(z_, &rK);
+    MatrixXd rId(rdim, rdim);
+    rId.setIdentity();
 
-
+    // assemble LHS
+    MatrixXd LHS(rdim, rdim);
+    LHS = (1 + h_ * alpha_) * rId + h_ * (beta_ + h_) * rK;
+    // assmeble RHS
+    VectorXd rhs(rdim);
+    rhs = dzdt_ + h_ * (U_.transpose() * Map<const VectorXd>(&fext_[0], fext_.size()) - rf);
+    // solve
+    FullPivLU<MatrixXd> sol;
+    sol.compute(LHS);
+    assert(sol.info() == Success);
+    dzdt_ = sol.solve(rhs);
+    assert(sol.info() == Success);
+    // finalize
+    z_ += h_ * dzdt_;
+    return 0;
 }
 
 StvkReducedSolver::matrixd_t& StvkReducedSolver::get_disp() {
@@ -518,6 +563,7 @@ int StvkReducedSolver::BuildModalBasis(const unordered_set<size_t> &fix) {
 
     // extend basis through modal derivative
     //.......
+    // modify the dim of subspace, i.e. nbrBasis_
 
     return 0;
 }
