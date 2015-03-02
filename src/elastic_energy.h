@@ -1,5 +1,5 @@
-#ifndef __ELASTIC_ELASTIC_ENERGY_H__
-#define __ELASTIC_ELASTIC_ENERGY_H__
+#ifndef ELASTIC_ELASTIC_ENERGY_H
+#define ELASTIC_ELASTIC_ENERGY_H
 
 #include <zjucad/matrix/matrix.h>
 

@@ -1,5 +1,5 @@
-#ifndef __ELASTIC_POSITION_CONSTRAINT_H__
-#define __ELASTIC_POSITION_CONSTRAINT_H__
+#ifndef ELASTIC_POSITION_CONSTRAINT_H
+#define ELASTIC_POSITION_CONSTRAINT_H
 
 #include <zjucad/matrix/matrix.h>
 #include "math_function.h"

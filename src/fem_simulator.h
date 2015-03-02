@@ -1,5 +1,5 @@
-#ifndef __ELASTIC_FEM_SIMULATOR_H__
-#define __ELASTIC_FEM_SIMULATOR_H__
+#ifndef ELASTIC_FEM_SIMULATOR_H
+#define ELASTIC_FEM_SIMULATOR_H
 
 namespace cj { namespace elastic {
 

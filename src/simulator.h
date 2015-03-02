@@ -1,5 +1,5 @@
-#ifndef __ELASTIC_FULL_SIMULATOR_H__
-#define __ELASTIC_FULL_SIMULATOR_H__
+#ifndef ELASTIC_FULL_SIMULATOR_H
+#define ELASTIC_FULL_SIMULATOR_H
 
 #include <boost/property_tree/ptree.hpp>
 #include <zjucad/matrix/matrix.h>

@@ -1,5 +1,5 @@
-#ifndef __ELASTIC_MATH_FUNCTION_H__
-#define __ELASTIC_MATH_FUNCTION_H__
+#ifndef ELASTIC_MATH_FUNCTION_H
+#define ELASTIC_MATH_FUNCTION_H
 
 #include <memory>
 #include <Eigen/Sparse>
