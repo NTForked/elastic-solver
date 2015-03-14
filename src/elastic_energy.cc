@@ -79,9 +79,8 @@ public :
                     break;
                 }
             }
-            *val += v;
+            *val += w_ * v;
         }
-        *val *= w_;
         return 0;
     }
 
@@ -116,9 +115,8 @@ public :
             }
 #pragma omp critical
             for (size_t k = 0; k < 12; ++k)
-                g[tets_(k / 3, i) * 3 + k % 3] += g_[k];
+                g[tets_(k / 3, i) * 3 + k % 3] += w_ * g_[k];
         }
-        g *= w_;
         return 0;
     }
 
