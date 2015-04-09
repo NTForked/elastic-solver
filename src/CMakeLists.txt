@@ -19,6 +19,7 @@ add_custom_command(OUTPUT AX_B.f90
 
 add_library(elastic SHARED ${header} ${source} constitutive.f90 AX_B.f90 reduced2rs.f90)
 target_link_libraries(elastic
-${ARPACK_LIBRARIES}
+    ${ARPACK_LIBRARIES}
+    jtf-mesh
 )
 # install the libraries

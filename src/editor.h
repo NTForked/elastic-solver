@@ -20,7 +20,7 @@ public:
     int SaveEditedSequence(const char *prefix);
 
     // config and init
-    int LoadParameters(boost::property_tree::ptree &pt);
+    int LoadParameters(const boost::property_tree::ptree &pt);
     int Init() {
         BuildLinearElasticEnergy();
         CalcMassMatrix();
