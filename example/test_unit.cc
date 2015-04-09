@@ -8,6 +8,7 @@
 #include "src/warping.h"
 #include "src/constitutive.h"
 #include "src/util.h"
+#include "src/editing_energy.h"
 
 #define CALL_SUB_PROG(prog)             \
     int prog(ptree &pt);                \
@@ -94,6 +95,24 @@ int test_matrix_plus(ptree &pt) {
     return 0;
 }
 
+int test_reduced_edit_energy(ptree &pt) {
+    VectorXd temp(3);
+    temp << 1, 2, 3;
+    ReducedEditEnergy e(2, 3, 0.1, 0.0, 0.0, temp);
+    return 0;
+}
+
+int test_diagonal_arithmetic(ptree &pt) {
+    DiagonalMatrix<double, -1> a(5), b(5);
+    a.diagonal() << 0, 2, 4, 6, 16;
+    b.diagonal() << 2, 2, 2, 2, 2;
+    cout << "sum:\n" << (a+b).diagonal() << endl;
+    cout << "diff:\n" << (a-b).diagonal() << endl;
+    cout << "product:\n" << (a*b).diagonal() << endl;
+    cout << "quotient:\n" << (a/b).diagonal() << endl;
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     ptree pt;
@@ -104,6 +123,8 @@ int main(int argc, char *argv[])
     CALL_SUB_PROG(test_make_matrix);
     CALL_SUB_PROG(test_matrix_lvalue);
     CALL_SUB_PROG(test_matrix_plus);
+    CALL_SUB_PROG(test_reduced_edit_energy);
+    CALL_SUB_PROG(test_diagonal_arithmetic);
     cout << "no sub program.\n";
     return 0;
 }

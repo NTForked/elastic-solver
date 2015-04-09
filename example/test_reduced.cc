@@ -25,17 +25,17 @@ using namespace Eigen;
 int main(int argc, char *argv[])
 {
     if ( argc != 2 ) {
-        cerr << "# Usage: ./program config.json\n";
+        cerr << "# Usage: " << argv[0] << " model.obj\n";
         return __LINE__;
     }
     boost::property_tree::ptree pt;
-    boost::property_tree::json_parser::read_json(argv[1], pt);
+    boost::property_tree::json_parser::read_json("../../config.json", pt);
+    boost::filesystem::create_directory("./modal_basis");
 
     matrix<size_t> tets;
     matrix<double> nods;
-    jtf::mesh::tet_mesh_read_from_vtk(pt.get<string>("elastic.model").c_str(), &nods, &tets);
+    jtf::mesh::tet_mesh_read_from_vtk(argv[1], &nods, &tets);
 
-    boost::filesystem::create_directory("./modal_basis");
     {
         std::ofstream os("./modal_basis/model.vtk");
         tet2vtk(os, &nods[0], nods.size(2), &tets[0], tets.size(2));
@@ -45,11 +45,11 @@ int main(int argc, char *argv[])
     sol->Init();
     sol->AddElasticEnergy(1.0);
     std::unordered_set<size_t> fix;
-    for (size_t id = 0; id <= 20; ++id) {
-        fix.insert(id * 3 + 0);
-        fix.insert(id * 3 + 1);
-        fix.insert(id * 3 + 2);
-    }
+//    for (size_t id = 0; id <= 20; ++id) {
+//        fix.insert(id * 3 + 0);
+//        fix.insert(id * 3 + 1);
+//        fix.insert(id * 3 + 2);
+//    }
     sol->BuildModalBasis(fix);
     cout << sol->lambda_.head(10) << "\n";
 

@@ -64,5 +64,34 @@ Eigen::Matrix<T, 3, 3> make_symm(const T *element) {
     return mat;
 }
 
+// in next four overload arithmetic binary opertions,
+// the operands require same size at run time. The
+// function itself does not check for this fact, which
+// needs to be guaranteed by users manually when invoking them
+
+template <typename T>
+inline Eigen::DiagonalMatrix<T, -1> operator +(const Eigen::DiagonalMatrix<T, -1> &a,
+                                               const Eigen::DiagonalMatrix<T, -1> &b) {
+    return Eigen::DiagonalMatrix<T, -1>(a.diagonal()+b.diagonal());
+}
+
+template <typename T>
+inline Eigen::DiagonalMatrix<T, -1> operator -(const Eigen::DiagonalMatrix<T, -1> &a,
+                                               const Eigen::DiagonalMatrix<T, -1> &b) {
+    return Eigen::DiagonalMatrix<T, -1>(a.diagonal()-b.diagonal());
+}
+
+template <typename T>
+inline Eigen::DiagonalMatrix<T, -1> operator *(const Eigen::DiagonalMatrix<T, -1> &a,
+                                               const Eigen::DiagonalMatrix<T, -1> &b) {
+    return Eigen::DiagonalMatrix<T, -1>(a.diagonal().cwiseProduct(b.diagonal()));
+}
+
+template <typename T>
+inline Eigen::DiagonalMatrix<T, -1> operator /(const Eigen::DiagonalMatrix<T, -1> &a,
+                                               const Eigen::DiagonalMatrix<T, -1> &b) {
+    return Eigen::DiagonalMatrix<T, -1>(a.diagonal().cwiseQuotient(b.diagonal()));
+}
+
 }}
 #endif
