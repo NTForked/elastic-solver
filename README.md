@@ -8,7 +8,7 @@ thus *small strain tensor* for linear elasticity while *Green strain tensor* for
 
 ## Dynamics ##
 
-I simply use implicit Euler to numerically integrate the Euler-Lagrange equations with Reilay damping model, and one can implement other integrator like implicit Newmark as well.
+I simply use implicit Euler to numerically integrate the Euler-Lagrange equations with Rayleigh damping model, and one can implement other integrator like implicit Newmark as well.
  
 ## Reduced Solver ##
 
@@ -16,7 +16,7 @@ Up to now, I only implement linear modal analysis in the project. More selection
 
 ## Model Warping ##
 
-Linear modal basis will generate articfacts of the simulation results under large deformation. [Huang11](http://www.cad.zju.edu.cn/home/hj/11/dynInterpolation.pdf) proposed Rotation-Strain coordinates to build a bridge connecting the reduced space and the Euclidean space and get the physically plausible results. 
+Linear modal basis will generate articfacts of the simulation results under large deformation. [Huang11](http://www.cad.zju.edu.cn/home/hj/11/dynInterpolation.pdf) proposed Rotation-Strain coordinates to build a bridge connecting the reduced space and the Euclidean space and managed to get the physically plausible results. 
 
 ## Animation Editor ##
 

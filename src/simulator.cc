@@ -32,6 +32,7 @@ StVKSimulator::StVKSimulator(const zjucad::matrix::matrix<size_t> &tets,
     beta_ = pt_.get<double>("elastic.beta");
     disp_ = zeros<double>(3, nods_.size(2));
     fext_ = zeros<double>(3, nods_.size(2));
+    grav_ = zeros<double>(3, nods_.size(2));
 
     // set mass matrix, here we want an unlumped matrix
     double dens = pt_.get<double>("elastic.density");
@@ -77,6 +78,17 @@ void StVKSimulator::SetExternalForce(const size_t idx, const double *force) {
 
 void StVKSimulator::ClearExternalForce() {
     fext_ = zeros<double>(3, nods_.size(2));
+}
+
+void StVKSimulator::SetGravity(const double w) {
+#pragma omp parallel for
+    for (size_t i = 0; i < grav_.size(2); ++i)
+        grav_(1, i) = -9.81 * w * M_.coeff(3 * i, 3 * i);
+    fext_ += grav_;
+}
+
+void StVKSimulator::ClearGravity() {
+    fext_ -= grav_;
 }
 
 int StVKSimulator::Advance() {

@@ -27,6 +27,8 @@ public :
     void ClearFixedPoints();
     void SetExternalForce(const size_t idx, const double *force);
     void ClearExternalForce();
+    void SetGravity(const double w);
+    void ClearGravity();
     int Advance();
     zjucad::matrix::matrix<double>& disp();
 
@@ -48,6 +50,7 @@ private :
     Eigen::VectorXd x_;         ///< store velocity and lagragian multipliers
     zjucad::matrix::matrix<double> disp_;
     zjucad::matrix::matrix<double> fext_;
+    zjucad::matrix::matrix<double> grav_;
     Eigen::SparseMatrix<double> M_;
 };
 
