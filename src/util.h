@@ -7,6 +7,26 @@
 namespace cj { namespace elastic {
 
 template <typename T>
+int runtime_dim_add_diag_block(const size_t dim, const size_t row, const size_t col, const T val,
+                               std::vector<Eigen::Triplet<T>> *trip) {
+    const size_t row_start = row * dim;
+    const size_t col_start = col * dim;
+    for (size_t off = 0; off < dim; ++off)
+        trip->push_back(Eigen::Triplet<T>(row_start+off, col_start+off, val));
+    return 0;
+}
+
+template <typename T>
+int runtime_dim_add_diag_block(const size_t dim, const size_t row, const size_t col, const T* val,
+                               std::vector<Eigen::Triplet<T>> *trip) {
+    const size_t row_start = row * dim;
+    const size_t col_start = col * dim;
+    for (size_t off = 0; off < dim; ++off)
+        trip->push_back(Eigen::Triplet<T>(row_start+off, col_start+off, val[off]));
+    return 0;
+}
+
+template <typename T>
 int RemoveSparseRowCol(Eigen::SparseMatrix<T> &A,
                        const std::vector<size_t> g2l) {
     size_t n = 0;

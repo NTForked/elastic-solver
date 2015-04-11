@@ -113,6 +113,14 @@ int test_diagonal_arithmetic(ptree &pt) {
     return 0;
 }
 
+int test_as_diagonal(ptree &pt) {
+    VectorXd a(3), b(3);
+    a << 1, 2, 3;
+    b << 4, 5, 6;
+    cout << a.asDiagonal() * b << endl;
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     ptree pt;
@@ -125,6 +133,7 @@ int main(int argc, char *argv[])
     CALL_SUB_PROG(test_matrix_plus);
     CALL_SUB_PROG(test_reduced_edit_energy);
     CALL_SUB_PROG(test_diagonal_arithmetic);
+    CALL_SUB_PROG(test_as_diagonal);
     cout << "no sub program.\n";
     return 0;
 }

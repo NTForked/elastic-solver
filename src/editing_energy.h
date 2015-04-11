@@ -24,9 +24,7 @@ private:
     const double h_;
     const double alpha_;
     const double beta_;
-    Eigen::VectorXd lambda_;
-    Eigen::DiagonalMatrix<double, -1> Lam_;
-    Eigen::DiagonalMatrix<double, -1> Id_;
+    Eigen::VectorXd Lam_, Id_, Damp_;
 };
 
 class Manipulation
