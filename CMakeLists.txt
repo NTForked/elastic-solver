@@ -37,7 +37,7 @@ endif(UMFPACK_FOUND)
 find_package(Arpack REQUIRED)
 
 # OPENCL
-find_package(OpenCL REQUIRED)
+find_package(OpenCL)
 if(OPENCL_FOUND)
     include_directories(${OPENCL_INCLUDE_DIRS})
 endif(OPENCL_FOUND)

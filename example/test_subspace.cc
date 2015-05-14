@@ -25,8 +25,8 @@ void draw(const string &directory, const size_t frm,
 
 int main(int argc, char *argv[])
 {
-    if ( argc != 2 ) {
-        cerr << "# Usage: ./prog config.json\n";
+    if ( argc != 3 ) {
+        cerr << "# Usage: ./prog config.json model.vtk\n";
         return __LINE__;
     }
     boost::property_tree::ptree pt;
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 
     matrix<size_t> tets;
     matrix<double> nods;
-    jtf::mesh::tet_mesh_read_from_vtk(pt.get<string>("elastic.model").c_str(), &nods, &tets);
+    jtf::mesh::tet_mesh_read_from_vtk(argv[2], &nods, &tets);
 
     boost::filesystem::create_directory("./subspace");
 
